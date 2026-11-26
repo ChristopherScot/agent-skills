@@ -2,6 +2,14 @@
 
 A small subset of the skills I built/use frequently.
 
+## Install
+
+```bash
+npx skills add ChristopherScot/agent-skills
+```
+
+It lists the skills in this repo and asks which to install and for which agents (Claude Code, Codex, Cursor and others). Each skill checks its own dependencies and asks before installing anything.
+
 ## ⚠️ Use at your own risk
 
 **Everything in this repo is vibe coded.** It was written by an AI, steered by me, and tested only as far as "it worked on my machine for the thing I was doing."
