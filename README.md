@@ -1,6 +1,6 @@
 # agent-skills
 
-Skills and agents I use with Claude Code.
+A small subset of the skills I built/use frequently.
 
 ## ⚠️ Use at your own risk
 
