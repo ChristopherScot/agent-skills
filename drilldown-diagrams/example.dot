@@ -1,0 +1,214 @@
+digraph system {
+  title="System"
+  legend="blue: Catalog, green: Delivery, amber: People, violet: Community, slate: Events"
+  caption="Solid edges are synchronous reads; dashed edges are events. No solid edge enters a program module, and none leaves one except to its own rows."
+  rankdir=TB
+
+  enrollment [label="Enrollment\nadmission · state machine" class="amber" URL="#enrollment" tooltip="Open Enrollment" description="Admits, waitlists or refuses in one transaction, and owns the enrollment state machine."]
+  scheduling [label="Scheduling\nsections · sessions · capacity" class="green" URL="#scheduling" tooltip="Open Scheduling"]
+  catalog [label="Catalog\nsubjects · programs · offerings · terms" class="blue" URL="#catalog" tooltip="Open Catalog"]
+  events [label="Event stream" shape=cds style=filled class="slate" URL="#events" tooltip="Open the event stream"]
+
+  subgraph cluster_modules {
+    label="PROGRAM MODULES — one per program, pluggable"
+    style=dashed
+    module_a [label="Program module\nlisteners · satellite data" class="violet"]
+    module_b [label="Program module\nlisteners · satellite data" class="violet"]
+  }
+
+  enrollment -> scheduling [label="reads"]
+  enrollment -> catalog [label="reads"]
+  scheduling -> catalog [label="reads"]
+  enrollment -> events [label="reserved, registered,\nwithdrawn, removed" style=dashed]
+  scheduling -> events [label="section published,\nsession ended, attended" style=dashed]
+  events -> module_a [style=dashed]
+  events -> module_b [style=dashed]
+  module_a -> catalog [label="owns its rows" style=dotted]
+}
+
+digraph entities {
+  title="All entities"
+  caption="The full entity graph. Community objects hang off the catalog; nothing on the catalog plane points outward."
+  rankdir=BT
+
+  subgraph cluster_catalog {
+    label="CATALOG — what we offer"
+    style=dashed
+    URL="#catalog"
+    tooltip="Open Catalog"
+    program [label="Program" class="blue"]
+    subject [label="Subject" class="blue"]
+    term [label="Term" class="blue"]
+    offering [label="Offering" class="blue"]
+  }
+
+  subgraph cluster_delivery {
+    label="DELIVERY — who meets, and when"
+    style=dashed
+    URL="#scheduling"
+    tooltip="Open Scheduling"
+    section [label="Section" class="green"]
+    session [label="Session" class="green"]
+    attendance [label="Attendance" class="green"]
+  }
+
+  subgraph cluster_people {
+    label="PEOPLE — enrollments and standing"
+    style=dashed
+    URL="#enrollment"
+    tooltip="Open Enrollment"
+    user [label="User" class="amber"]
+    enrollment [label="Enrollment" class="amber" URL="#enrollment-lifecycle" tooltip="Open the enrollment lifecycle"]
+    program_membership [label="Program\nMembership" class="amber"]
+    subject_standing [label="Subject\nStanding" class="amber"]
+  }
+
+  subgraph cluster_community {
+    label="COMMUNITY — a feature, not an entity"
+    style=dashed
+    channel [label="Channel" class="violet"]
+    post [label="Post" class="violet"]
+  }
+
+  term -> program [label="run of"]
+  offering -> program [label="belongs to ⌀" style=dashed]
+  offering -> subject [label="about"]
+  section -> term [label="within ⌀" style=dashed]
+  section -> offering [label="instantiates"]
+  session -> section [label="occurrence of"]
+  enrollment -> section [label="seat in"]
+  attendance -> session
+  attendance -> enrollment
+  enrollment -> user
+  program_membership -> user
+  program_membership -> program
+  subject_standing -> user
+  subject_standing -> subject
+  channel -> program [label="scoped to ⌀" style=dashed]
+  channel -> subject [label="scoped to ⌀" style=dashed]
+  post -> channel
+}
+
+digraph catalog {
+  title="Catalog"
+  parent="system"
+  caption="What we offer: programs, subjects, the terms a program runs in, and the offerings scheduled against them. Dashed boxes live elsewhere in the model; click one to go there."
+  rankdir=BT
+
+  program [label="Program" class="blue"]
+  subject [label="Subject" class="blue"]
+  term [label="Term" class="blue"]
+  offering [label="Offering" class="blue"]
+
+  section [label="Section" class="ghost" URL="#scheduling" tooltip="Open Scheduling"]
+  program_membership [label="Program\nMembership" class="ghost" URL="#enrollment" tooltip="Open Enrollment"]
+  subject_standing [label="Subject\nStanding" class="ghost" URL="#enrollment" tooltip="Open Enrollment"]
+  channel [label="Channel" class="ghost" URL="#entities" tooltip="Open all entities"]
+
+  term -> program [label="run of"]
+  offering -> program [label="belongs to ⌀" style=dashed]
+  offering -> subject [label="about"]
+  section -> offering [label="instantiates"]
+  section -> term [label="within ⌀" style=dashed]
+  program_membership -> program
+  subject_standing -> subject
+  channel -> program [label="scoped to ⌀" style=dashed]
+  channel -> subject [label="scoped to ⌀" style=dashed]
+}
+
+digraph scheduling {
+  title="Scheduling"
+  parent="system"
+  caption="Who meets, and when. A section is a scheduled run of an offering, sessions are its meetings, and attendance joins a session to an enrollment."
+  rankdir=BT
+
+  section [label="Section" class="green"]
+  session [label="Session" class="green"]
+  attendance [label="Attendance" class="green"]
+
+  offering [label="Offering" class="ghost" URL="#catalog" tooltip="Open Catalog"]
+  term [label="Term" class="ghost" URL="#catalog" tooltip="Open Catalog"]
+  enrollment [label="Enrollment" class="ghost" URL="#enrollment" tooltip="Open Enrollment"]
+
+  section -> offering [label="instantiates"]
+  section -> term [label="within ⌀" style=dashed]
+  session -> section [label="occurrence of"]
+  attendance -> session
+  attendance -> enrollment
+  enrollment -> section [label="seat in"]
+}
+
+digraph enrollment {
+  title="Enrollment"
+  parent="system"
+  caption="Enrollments and standing. An enrollment is a seat in a section; program membership and subject standing record where a person stands outside any one section. Open Enrollment for its lifecycle."
+  rankdir=BT
+
+  user [label="User" class="amber"]
+  enrollment [label="Enrollment" class="amber" URL="#enrollment-lifecycle" tooltip="Open the enrollment lifecycle"]
+  program_membership [label="Program\nMembership" class="amber"]
+  subject_standing [label="Subject\nStanding" class="amber"]
+
+  section [label="Section" class="ghost" URL="#scheduling" tooltip="Open Scheduling"]
+  attendance [label="Attendance" class="ghost" URL="#scheduling" tooltip="Open Scheduling"]
+  program [label="Program" class="ghost" URL="#catalog" tooltip="Open Catalog"]
+  subject [label="Subject" class="ghost" URL="#catalog" tooltip="Open Catalog"]
+
+  enrollment -> user
+  enrollment -> section [label="seat in"]
+  attendance -> enrollment
+  program_membership -> user
+  program_membership -> program
+  subject_standing -> user
+  subject_standing -> subject
+}
+
+digraph "enrollment-lifecycle" {
+  title="Enrollment lifecycle"
+  parent="enrollment"
+  caption="Enrollment statuses. Every terminal state names why it ended (an expired reservation is not a withdrawal), so metrics fold over transitions without guessing."
+  notes="There is no overselling, by construction: admission runs in one transaction that locks the section row, counts live enrollments, and admits, waitlists, or refuses. The section is the aggregate; the lock is the invariant's home. The waitlist is a status of the one record, not a sibling table: a waitlisted enrollment holds no capacity, and when a seat opens, promotion is an update that runs through the same admission operation, asynchronously, because a briefly unfilled seat breaks nothing, while an oversold one breaks a promise."
+  rankdir=LR
+
+  reserved [class="amber"]
+  waitlisted [class="amber"]
+  registered [class="amber"]
+  lapsed [class="amber"]
+  removed [class="amber"]
+  withdrawn [class="amber"]
+
+  reserved -> lapsed [label="expires"]
+  reserved -> registered [label="confirms"]
+  waitlisted -> registered [label="seat opens"]
+  waitlisted -> withdrawn [label="gives up"]
+  registered -> removed [label="host / policy"]
+  registered -> withdrawn [label="own choice"]
+}
+
+digraph events {
+  title="Event stream"
+  parent="system"
+  caption="What crosses a boundary asynchronously. Enrollment and Scheduling publish; program modules listen and keep their own satellite data."
+  rankdir=LR
+
+  enrollment [label="Enrollment" class="amber" URL="#enrollment" tooltip="Open Enrollment"]
+  scheduling [label="Scheduling" class="green" URL="#scheduling" tooltip="Open Scheduling"]
+
+  reserved [label="reserved" shape=cds style=filled class="slate"]
+  registered [label="registered" shape=cds style=filled class="slate"]
+  withdrawn [label="withdrawn" shape=cds style=filled class="slate"]
+  removed [label="removed" shape=cds style=filled class="slate"]
+  section_published [label="section published" shape=cds style=filled class="slate"]
+  session_ended [label="session ended" shape=cds style=filled class="slate"]
+  attended [label="attended" shape=cds style=filled class="slate"]
+
+  subgraph cluster_modules {
+    label="PROGRAM MODULES"
+    style=dashed
+    modules [label="Each program module\nsubscribes to what it needs" class="violet"]
+  }
+
+  enrollment -> {reserved registered withdrawn removed} [style=dashed]
+  scheduling -> {section_published session_ended attended} [style=dashed]
+  {reserved registered withdrawn removed section_published session_ended attended} -> modules [style=dashed]
+}

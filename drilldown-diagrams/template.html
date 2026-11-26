@@ -1,0 +1,3186 @@
+<title>{{TITLE}}</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="drilldown-mode" content="{{MODE}}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&family=Space+Grotesk:wght@500;600&display=swap">
+<style>
+/* One diagram stage at a time: breadcrumb trail above, caption and source below; opening a box zooms the stage out of it. Edit mode adds a box editor and a save bar. */
+:root {
+  --bg: #f4f5f8;
+  --panel: #ffffff;
+  --fg: #1a1f2c;
+  --muted: #5b6476;
+  --line: #d6dae3;
+  --edge: #6a7387;
+  --focus: #3d63dd;
+  --focus-soft: #e3e9fd;
+  --ok: #2f8a4f;
+  --bad: #c2413b;
+  --blue-fill: #e9edfc;
+  --blue-line: #5a6fd8;
+  --green-fill: #e4f3e9;
+  --green-line: #3a9358;
+  --amber-fill: #fbefdc;
+  --amber-line: #c4862a;
+  --violet-fill: #f0e9fb;
+  --violet-line: #8761cf;
+  --rose-fill: #fbe7ec;
+  --rose-line: #c94c6e;
+  --slate-fill: #eceef3;
+  --slate-line: #6d778a;
+  --shadow: 0 10px 30px rgba(20, 26, 40, 0.16);
+  --selection: rgba(61, 99, 221, 0.22);
+  --syn-keyword: #8a3fb8;
+  --syn-string: #2b7a4b;
+  --syn-attr: #2f5fc4;
+  --syn-meta: #b0541c;
+  --syn-comment: #8a93a5;
+  --syn-arrow: #c2405f;
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-diagram: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12151c;
+    --panel: #1a1e27;
+    --fg: #e6e9ef;
+    --muted: #98a1b3;
+    --line: #333a48;
+    --edge: #8f98ab;
+    --focus: #8ea6ff;
+    --focus-soft: #232c4a;
+    --ok: #6cc489;
+    --bad: #ef7a72;
+    --blue-fill: #252c4b;
+    --blue-line: #8c9cf0;
+    --green-fill: #1d3325;
+    --green-line: #6cc489;
+    --amber-fill: #382a18;
+    --amber-line: #e0a85a;
+    --violet-fill: #2c2340;
+    --violet-line: #b394f0;
+    --rose-fill: #3a1f28;
+    --rose-line: #ef8fa8;
+    --slate-fill: #252931;
+    --slate-line: #9aa3b5;
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+    --selection: rgba(142, 166, 255, 0.28);
+    --syn-keyword: #c79cf4;
+    --syn-string: #8fd3a2;
+    --syn-attr: #8eb6ff;
+    --syn-meta: #f2aa6b;
+    --syn-comment: #6f7a8f;
+    --syn-arrow: #f095ad;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12151c;
+  --panel: #1a1e27;
+  --fg: #e6e9ef;
+  --muted: #98a1b3;
+  --line: #333a48;
+  --edge: #8f98ab;
+  --focus: #8ea6ff;
+  --focus-soft: #232c4a;
+  --ok: #6cc489;
+  --bad: #ef7a72;
+  --blue-fill: #252c4b;
+  --blue-line: #8c9cf0;
+  --green-fill: #1d3325;
+  --green-line: #6cc489;
+  --amber-fill: #382a18;
+  --amber-line: #e0a85a;
+  --violet-fill: #2c2340;
+  --violet-line: #b394f0;
+  --rose-fill: #3a1f28;
+  --rose-line: #ef8fa8;
+  --slate-fill: #252931;
+  --slate-line: #9aa3b5;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  --selection: rgba(142, 166, 255, 0.28);
+  --syn-keyword: #c79cf4;
+  --syn-string: #8fd3a2;
+  --syn-attr: #8eb6ff;
+  --syn-meta: #f2aa6b;
+  --syn-comment: #6f7a8f;
+  --syn-arrow: #f095ad;
+  color-scheme: dark;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.55;
+}
+[hidden] {
+  display: none !important;
+}
+.wrap {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding-block: 28px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+}
+.is-editing .wrap {
+  padding-bottom: 120px;
+}
+.topline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 20px;
+}
+.top-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.crumbs ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.crumbs li + li::before {
+  content: "›";
+  margin-right: 4px;
+  color: var(--muted);
+}
+.crumbs button,
+.roots button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 3px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.crumbs button:hover {
+  color: var(--fg);
+  background: var(--panel);
+}
+.crumbs [aria-current] {
+  color: var(--fg);
+  font-weight: 500;
+  padding: 3px 6px;
+}
+.roots {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--panel);
+  font-size: 13px;
+}
+.roots button[aria-pressed="true"] {
+  background: var(--bg);
+  color: var(--fg);
+  font-weight: 500;
+}
+.roots button[aria-pressed="false"] {
+  color: var(--muted);
+}
+.tool {
+  font: 500 13px var(--font-body);
+  color: var(--fg);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 5px 12px;
+  cursor: pointer;
+}
+.tool:hover {
+  border-color: var(--edge);
+}
+.tool[aria-pressed="true"] {
+  background: var(--focus-soft);
+  border-color: var(--focus);
+  color: var(--fg);
+}
+.tool.primary {
+  background: var(--focus);
+  border-color: var(--focus);
+  color: var(--panel);
+}
+.tool:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+:is(.crumbs, .roots, .source, .editbar, .editor, .top-actions) button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 30px;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+h1:focus {
+  outline: none;
+}
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+  border: 1.5px solid;
+}
+.swatch.ghost {
+  border-style: dashed;
+  border-color: var(--edge);
+}
+.hint .when-unfocused {
+  display: none;
+  color: var(--focus);
+}
+.drilldown.page-unfocused .hint .when-unfocused {
+  display: inline;
+}
+.drilldown.page-unfocused .hint .when-focused {
+  display: none;
+}
+.hint kbd {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 0 4px;
+  background: var(--panel);
+}
+.loading {
+  color: var(--muted);
+}
+.load-error {
+  color: var(--bad);
+}
+
+.view {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+.view[hidden] {
+  display: none;
+}
+.figure {
+  margin: 0;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.stage {
+  overflow: auto;
+  padding: 18px 12px;
+}
+.stage svg {
+  display: block;
+  margin: 0 auto;
+  width: 100%;
+  height: auto;
+  max-width: calc(var(--view-width) * 1.3px);
+  min-width: min(calc(var(--view-width) * 0.85px), 860px);
+  overflow: visible;
+}
+.map-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+}
+.seg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--panel);
+  font-size: 13px;
+}
+.seg button {
+  font: inherit;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  padding: 3px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+.seg button:hover {
+  color: var(--fg);
+}
+.seg button[aria-pressed="true"] {
+  background: var(--bg);
+  color: var(--fg);
+  font-weight: 500;
+}
+.seg button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+.map-hint {
+  font-size: 12px;
+  color: var(--muted);
+}
+.stage.map-stage {
+  height: min(74vh, 920px);
+  padding: 16px;
+  cursor: grab;
+  overscroll-behavior: contain;
+}
+.stage.map-stage.panning {
+  cursor: grabbing;
+  user-select: none;
+}
+.stage.map-stage svg {
+  max-width: none;
+  min-width: 0;
+  margin: 0;
+}
+.map-view .stage .cluster > g > a > text,
+.map-view .stage .cluster > text {
+  font-weight: 600;
+}
+.detail {
+  border-top: 1px solid var(--line);
+  padding: 10px 18px;
+  font-size: 14px;
+  background: var(--bg);
+}
+.detail strong {
+  font-weight: 600;
+}
+figcaption {
+  border-top: 1px solid var(--line);
+  padding: 12px max(18px, calc(100% - 78ch - 18px)) 14px 18px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.notes {
+  margin: 0;
+  max-width: 68ch;
+  font-size: 16px;
+  line-height: 1.65;
+  white-space: pre-line;
+}
+figcaption:empty,
+.notes:empty {
+  display: none;
+}
+.is-editing :is(figcaption, .notes):empty {
+  display: block;
+}
+.is-editing :is(figcaption, .notes, h1)[contenteditable]:empty::before {
+  content: attr(data-placeholder);
+  color: var(--muted);
+  font-style: italic;
+}
+.is-editing :is(figcaption, .notes, h1)[contenteditable] {
+  cursor: text;
+  border-radius: 6px;
+  outline: 1px dashed var(--line);
+  outline-offset: 4px;
+}
+.is-editing :is(figcaption, .notes, h1)[contenteditable]:focus {
+  outline: 2px solid var(--focus);
+}
+
+.stage svg text {
+  font-family: var(--font-diagram);
+}
+.stage .node text {
+  fill: var(--fg);
+  font-weight: 500;
+}
+.stage .node :is(path, polygon, ellipse) {
+  stroke-width: 1.4;
+}
+.stage .node :is(path, polygon, ellipse)[fill="lightgrey"] {
+  fill: var(--panel);
+}
+.stage .node :is(path, polygon, ellipse)[stroke="black"] {
+  stroke: var(--edge);
+}
+.stage .node.blue { color: var(--blue-line); }
+.stage .node.green { color: var(--green-line); }
+.stage .node.amber { color: var(--amber-line); }
+.stage .node.violet { color: var(--violet-line); }
+.stage .node.rose { color: var(--rose-line); }
+.stage .node.slate { color: var(--slate-line); }
+.stage .node.ghost { color: var(--ghost-line, var(--edge)); }
+.stage .node.blue :is(path, polygon, ellipse) { fill: var(--blue-fill); stroke: var(--blue-line); }
+.stage .node.green :is(path, polygon, ellipse) { fill: var(--green-fill); stroke: var(--green-line); }
+.stage .node.amber :is(path, polygon, ellipse) { fill: var(--amber-fill); stroke: var(--amber-line); }
+.stage .node.violet :is(path, polygon, ellipse) { fill: var(--violet-fill); stroke: var(--violet-line); }
+.stage .node.rose :is(path, polygon, ellipse) { fill: var(--rose-fill); stroke: var(--rose-line); }
+.stage .node.slate :is(path, polygon, ellipse) { fill: var(--slate-fill); stroke: var(--slate-line); }
+.stage .node.ghost :is(path, polygon, ellipse) {
+  fill: var(--panel);
+  stroke: var(--ghost-line, var(--edge));
+  stroke-dasharray: 4 3;
+}
+.stage .node.ghost text {
+  fill: var(--muted);
+}
+.stage .edge path {
+  stroke: var(--edge);
+  stroke-width: 1.2;
+}
+.stage .edge polygon {
+  fill: var(--edge);
+  stroke: var(--edge);
+}
+.stage .edge text {
+  fill: var(--muted);
+}
+.stage .cluster :is(path, polygon) {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 1.2;
+}
+.stage .cluster text {
+  fill: var(--muted);
+}
+
+.stage .drill a {
+  cursor: pointer;
+  outline: none;
+}
+.stage .node.drill:not(.ghost) :is(path, polygon, ellipse) {
+  stroke-width: 2.6;
+}
+.drilldown:not(.is-editing) .stage .node.drill a:hover :is(path, polygon, ellipse) {
+  stroke-width: 3.4;
+}
+.drilldown:not(.is-editing) .stage .node.drill.ghost a:hover :is(path, polygon, ellipse),
+.drilldown:not(.is-editing) .stage .cluster.drill a:hover :is(path, polygon) {
+  stroke: var(--focus);
+  stroke-dasharray: none;
+}
+.stage .cluster.drill text {
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+}
+.stage .drill a:focus-visible :is(path, polygon, ellipse) {
+  stroke: var(--focus);
+  stroke-width: 3.6;
+  stroke-dasharray: none;
+}
+.stage .badge circle {
+  fill: var(--panel);
+  stroke: currentColor;
+  stroke-width: 1.5;
+}
+.stage .badge path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+.stage .badge.map-toggle {
+  color: var(--focus);
+  cursor: pointer;
+}
+.stage .badge.map-toggle:hover circle {
+  fill: var(--focus-soft);
+}
+.stage .came-from :is(path, polygon, ellipse) {
+  animation: came-from 1.4s ease-out;
+}
+@keyframes came-from {
+  0%, 30% { stroke: var(--focus); stroke-width: 5; }
+}
+.is-editing .stage :is(g.node, g.cluster) {
+  cursor: pointer;
+  outline: none;
+}
+.is-editing .stage :is(g.node, g.cluster):is(:hover, :focus-visible, .is-selected) > :is(path, polygon, ellipse),
+.is-editing .stage :is(g.node, g.cluster):is(:hover, :focus-visible, .is-selected) > g > a > :is(path, polygon, ellipse) {
+  stroke: var(--focus);
+  stroke-width: 3;
+  stroke-dasharray: none;
+}
+
+.source summary {
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--muted);
+  width: max-content;
+}
+.source summary:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.source-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+.source pre {
+  margin: 8px 0 0;
+  padding: 14px 16px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: auto;
+  max-height: 420px;
+  font: 12.5px/1.6 var(--font-mono);
+}
+.foot {
+  font-size: 13px;
+  color: var(--muted);
+  max-width: 78ch;
+  margin: 0;
+}
+
+.editbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  background: var(--panel);
+  border-top: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  padding-block: 12px calc(12px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.editbar-inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+}
+.edit-status {
+  font-size: 14px;
+  color: var(--muted);
+  min-width: 0;
+}
+.edit-status.ok { color: var(--ok); }
+.edit-status.bad { color: var(--bad); }
+.editbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.edit-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  width: 100%;
+}
+.edit-tools .tool[aria-pressed="true"] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.edit-tools .style-bar {
+  --ds-accent: var(--accent);
+  --ds-bg: var(--panel);
+  --ds-fg: var(--fg);
+  --ds-line: var(--line);
+  --ds-muted: var(--muted);
+  color: var(--fg);
+  font-size: 13px;
+}
+.stage .edit-canvas {
+  --dc-accent: var(--accent);
+  --dc-editor-bg: var(--panel);
+  --dc-editor-fg: var(--fg);
+  overflow: visible;
+}
+.stage .edit-canvas svg.dc-overlay {
+  width: auto;
+  height: auto;
+  max-width: none;
+  min-width: 0;
+  margin: 0;
+}
+:is(figcaption, .notes) :is(p, ul, ol, pre, blockquote) { margin: 0 0 6px; }
+:is(figcaption, .notes) > :last-child { margin-bottom: 0; }
+:is(figcaption, .notes) :is(h3, h4, h5, h6) { margin: 8px 0 4px; font-size: 1em; }
+:is(figcaption, .notes) code { font-size: 0.92em; }
+:is(figcaption, .notes) pre { overflow-x: auto; }
+:is(figcaption, .notes) blockquote { border-left: 3px solid var(--line); padding-left: 10px; }
+
+.editor {
+  position: absolute;
+  z-index: 30;
+  width: min(340px, calc(100vw - 32px));
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 14px;
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+}
+.editor-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 14px;
+}
+.editor-id {
+  font: 11.5px var(--font-mono);
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.editor label {
+  color: var(--muted);
+  font-weight: 500;
+}
+.editor textarea {
+  font: 14px/1.45 var(--font-body);
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 7px 9px;
+  resize: vertical;
+  width: 100%;
+  box-sizing: border-box;
+}
+.editor textarea:focus {
+  outline: 2px solid var(--focus);
+  outline-offset: 0;
+  border-color: var(--focus);
+}
+.editor .check {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-weight: 400;
+  color: var(--fg);
+}
+.editor .check input {
+  margin-top: 3px;
+}
+.editor-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 4px;
+}
+.editor-actions .spacer {
+  flex: 1;
+}
+.dot-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: var(--editbar-height, 64px);
+  width: min(46vw, 680px);
+  z-index: 25;
+  background: var(--panel);
+  border-left: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: calc(14px + env(safe-area-inset-top, 0px)) max(14px, env(safe-area-inset-right, 0px)) 14px 14px;
+  box-sizing: border-box;
+}
+.dot-panel > .dot-editor {
+  flex: 1 1 auto;
+}
+.has-dot-panel .wrap {
+  margin-right: min(46vw, 680px);
+}
+.dot-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+}
+.dot-head strong {
+  flex: 1;
+  min-width: 0;
+  font: 600 14px var(--font-mono);
+  overflow-wrap: anywhere;
+}
+.dot-scope {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--bg);
+  font-size: 13px;
+}
+.dot-scope button {
+  font: inherit;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  padding: 3px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.dot-scope button[aria-pressed="true"] {
+  background: var(--panel);
+  color: var(--fg);
+  font-weight: 500;
+}
+.dot-scope button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+.dot-hint {
+  flex-basis: 100%;
+  font-size: 12px;
+  color: var(--muted);
+}
+.dot-hint kbd {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 0 4px;
+  background: var(--bg);
+}
+.dot-status {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+.dot-status.ok { color: var(--ok); }
+.dot-status.warn,
+.dot-status.bad { color: var(--bad); }
+.dot-problems {
+  margin: 0;
+  padding: 0 0 0 18px;
+  max-height: 9em;
+  overflow: auto;
+  font-size: 12.5px;
+  color: var(--bad);
+  display: grid;
+  gap: 2px;
+}
+.dot-problems button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  text-align: left;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.dot-problems button:focus-visible,
+.dot-panel .tool:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.dot-editor {
+  position: relative;
+  min-height: 0;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.dot-editor:focus-within {
+  outline: 2px solid var(--focus);
+  outline-offset: 0;
+  border-color: var(--focus);
+}
+.dot-editor :is(pre, textarea) {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 12px 14px;
+  border: 0;
+  box-sizing: border-box;
+  font: 12.5px/1.6 var(--font-mono);
+  font-variant-ligatures: none;
+  letter-spacing: normal;
+  white-space: pre;
+  tab-size: 2;
+}
+.dot-editor pre {
+  overflow: hidden;
+  pointer-events: none;
+  color: var(--fg);
+}
+.dot-editor textarea {
+  overflow: auto;
+  resize: none;
+  color: transparent;
+  background: transparent;
+  caret-color: var(--fg);
+  outline: none;
+}
+.dot-editor textarea::selection {
+  color: transparent;
+  background: var(--selection);
+}
+.t-k { color: var(--syn-keyword); font-weight: 600; }
+.t-s { color: var(--syn-string); }
+.t-a { color: var(--syn-attr); }
+.t-m { color: var(--syn-meta); font-weight: 600; }
+.t-c { color: var(--syn-comment); font-style: italic; }
+.t-o { color: var(--syn-arrow); font-weight: 600; }
+.t-n { color: var(--syn-string); }
+.t-p { color: var(--muted); }
+.source code {
+  font-variant-ligatures: none;
+}
+@media (max-width: 900px) {
+  .dot-panel {
+    top: auto;
+    left: 0;
+    width: auto;
+    height: 55vh;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    border-radius: 14px 14px 0 0;
+    padding-left: max(14px, env(safe-area-inset-left, 0px));
+  }
+  .has-dot-panel .wrap {
+    margin-right: auto;
+    padding-bottom: calc(55vh + 120px);
+  }
+}
+@media (max-width: 640px) {
+  .editor {
+    position: fixed;
+    left: 0 !important;
+    right: 0;
+    top: auto !important;
+    bottom: 0;
+    width: auto;
+    border-radius: 14px 14px 0 0;
+    padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    padding-left: max(14px, env(safe-area-inset-left, 0px));
+    padding-right: max(14px, env(safe-area-inset-right, 0px));
+  }
+}
+@media (max-width: 520px) {
+  h1 { font-size: 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stage .came-from :is(path, polygon, ellipse) { animation: none; }
+}
+</style>
+
+<div class="drilldown" data-dd-root data-dd-name="dd">
+<div class="wrap">
+  <header class="top">
+    <div class="topline">
+      <nav class="crumbs" aria-label="Diagram level"><ol data-dd="crumbs"></ol></nav>
+      <div class="top-actions">
+        <nav class="roots" data-dd="roots" aria-label="Top-level views"></nav>
+        <button type="button" class="tool" data-dd="map-toggle" aria-pressed="false" hidden>Whole map</button>
+        <button type="button" class="tool" data-dd="edit-toggle" aria-pressed="false" hidden>Edit</button>
+      </div>
+    </div>
+  </header>
+  <h1 data-dd="view-title" tabindex="-1" data-placeholder="Add a title">{{TITLE}}</h1>
+  <div class="meta">
+    <div class="legend" data-dd="legend"></div>
+    <span class="hint" data-dd="hint"></span>
+  </div>
+  <main data-dd="views"><p class="loading" data-dd="loading">Drawing diagrams…</p></main>
+  {{FOOTER}}
+</div>
+
+<div class="editbar" data-dd="editbar" role="region" aria-label="Editing" hidden>
+  <div class="editbar-inner">
+    <div class="edit-tools" data-dd="edit-tools">
+      <button type="button" class="tool" data-dd="add-node">Add node</button>
+      <button type="button" class="tool" data-dd="create-group" aria-pressed="false">Create group</button>
+      <button type="button" class="tool" data-dd="to-view" disabled>Turn into view</button>
+      <button type="button" class="tool" data-dd="undo" disabled>Undo</button>
+      <button type="button" class="tool" data-dd="redo" disabled>Redo</button>
+      <button type="button" class="tool" data-dd="details" disabled>Details&hellip;</button>
+      <div class="style-bar" data-dd="style-bar"></div>
+    </div>
+    <span class="edit-status" data-dd="edit-status" role="status"></span>
+    <div class="editbar-actions">
+      <button type="button" class="tool" data-dd="dot-toggle" aria-pressed="false" aria-controls="dot-panel">Edit DOT</button>
+      <button type="button" class="tool" data-dd="copy-model">Copy DOT</button>
+      <button type="button" class="tool" data-dd="discard" disabled>Discard changes</button>
+      <button type="button" class="tool primary" data-dd="save" disabled>Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="editor" data-dd="editor" role="dialog" aria-labelledby="editor-heading" hidden>
+  <div class="editor-head"><strong data-dd="editor-heading" id="editor-heading">Edit node</strong><span class="editor-id" data-dd="editor-id"></span></div>
+  <label for="editor-label">Label</label>
+  <textarea data-dd="editor-label" id="editor-label" rows="2"></textarea>
+  <label for="editor-description">Description</label>
+  <textarea data-dd="editor-description" id="editor-description" rows="3" placeholder="What is this? Shown when someone points at the box."></textarea>
+  <label class="check" data-dd="editor-spread-row"><input type="checkbox" data-dd="editor-spread" checked><span data-dd="editor-spread-text"></span></label>
+  <label class="check" data-dd="editor-view-row"><input type="checkbox" data-dd="editor-view" checked><span data-dd="editor-view-text"></span></label>
+  <div class="editor-actions">
+    <button type="button" class="tool" data-dd="editor-open">Open view</button>
+    <span class="spacer"></span>
+    <button type="button" class="tool" data-dd="editor-cancel">Cancel</button>
+    <button type="button" class="tool primary" data-dd="editor-apply">Apply</button>
+  </div>
+</div>
+
+<aside class="dot-panel" data-dd="dot-panel" id="dot-panel" aria-labelledby="dot-heading" hidden>
+  <div class="dot-head">
+    <strong data-dd="dot-heading" id="dot-heading">model.dot</strong>
+    <div class="dot-scope" role="group" aria-label="What the DOT editor shows">
+      <button type="button" data-dd="dot-scope-view" aria-pressed="true">This view</button>
+      <button type="button" data-dd="dot-scope-model" aria-pressed="false">Whole file</button>
+    </div>
+    <button type="button" class="tool" data-dd="dot-close">Close</button>
+    <span class="dot-hint">Changes apply as you type. <kbd>Esc</kbd> leaves the editor, <kbd>⌘S</kbd> saves.</span>
+  </div>
+  <p class="dot-status" data-dd="dot-status" role="status"></p>
+  <ul class="dot-problems" data-dd="dot-problems" hidden></ul>
+  <div class="dot-editor">
+    <pre data-dd="dot-highlight" aria-hidden="true"></pre>
+    <textarea data-dd="dot-text" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off" aria-label="DOT source for every view"></textarea>
+  </div>
+</aside>
+</div>
+
+<script type="text/vnd.graphviz" id="model-source">{{SOURCE}}</script>
+<script type="application/json" id="page-template">{{TEMPLATE}}</script>
+<script type="application/json" id="page-shell">{{SHELL}}</script>
+{{VIZ_SCRIPT}}
+<script>
+(() => {
+  const XLINK = 'http://www.w3.org/1999/xlink'
+  const SVG_NS = 'http://www.w3.org/2000/svg'
+  {{VALIDATOR}}
+  {{EDITOR}}
+  const SLOT_SOURCE = '{{' + 'SOURCE}}'
+  const SLOT_TEMPLATE = '{{' + 'TEMPLATE}}'
+  const SLOT_VIZ = '{{' + 'VIZ_SCRIPT}}'
+  const MODE_META = document.querySelector('meta[name="drilldown-mode"]')
+  const MODE = MODE_META?.content ?? 'artifact'
+  const LAYOUT = {
+    graphAttributes: { bgcolor: 'transparent', pad: '0.25', nodesep: '0.55', ranksep: '0.75', fontname: 'Helvetica', fontsize: '11' },
+    nodeAttributes: { shape: 'box', style: 'rounded,filled', margin: '0.2,0.1', fontname: 'Helvetica', fontsize: '14' },
+    edgeAttributes: { fontname: 'Helvetica', fontsize: '11', arrowsize: '0.7' },
+  }
+  const VIEW_HINT = 'Nodes with a thick outline and a corner badge open a deeper view. Dashed nodes jump to where they live. <span class="when-focused"><kbd>Esc</kbd> goes up a level.</span><span class="when-unfocused">Click the page to use <kbd>Esc</kbd>.</span>'
+  const EDIT_HINT = 'Drag from a node to connect it, or into empty space for a new node. Select a node to recolor it, type to rename it, or press Tab for a connected node. Create group draws a dashed group around what you drag over; select a group to turn it into its own view. Click the title, caption or notes to edit them.'
+
+  // Scoped to this widget's root, not the document, so two drill-downs can sit
+  // on one page without fighting over element ids. The root is the nearest
+  // [data-dd-root]; on a standalone page that is the only one.
+  // Each instance claims the first root that has not been claimed yet, so two
+  // embeds in one document each drive their own widget. A bare
+  // document.querySelector would hand every script the first root on the page,
+  // leaving the second widget stuck on "Drawing diagrams…".
+  const root = document.querySelector('[data-dd-root]:not([data-dd-ready])')
+  if (root == null) return
+  root.setAttribute('data-dd-ready', '')
+
+  // Data blocks belong to this instance when it carries its own; a standalone
+  // page has one set at document level.
+  const ownScript = name =>
+    root.querySelector(`script[data-dd-data="${name}"]`) ?? document.getElementById(name)
+  const PAGE_TEMPLATE = JSON.parse(ownScript('page-template')?.textContent ?? 'null')
+  const PAGE_SHELL = JSON.parse(ownScript('page-shell')?.textContent ?? 'null')
+  const $ = name => root.querySelector(`[data-dd="${name}"]`)
+
+  // Per-instance settings, declared on the root element so the same code
+  // serves a standalone page and a widget embedded in a document.
+  //   data-dd-model   file to fetch, or the id of an inline <script> holding DOT
+  //   data-dd-routing "hash" (default) writes location.hash; "none" keeps the
+  //                   current view in memory, which is what lets two widgets
+  //                   share a page without fighting over the URL.
+  const MODEL_PATH = root.dataset.ddModel || 'model.dot'
+  const ROUTING = root.dataset.ddRouting || 'hash'
+  const INSTANCE = root.dataset.ddName || 'dd'
+
+  // Reading and writing the current view goes through these, so `location.hash`
+  // appears in exactly one place.
+  let memoryRoute = ''
+  const readRoute = () => (ROUTING === 'hash' ? location.hash.slice(1) : memoryRoute)
+  const writeRoute = id => {
+    if (ROUTING !== 'hash') { memoryRoute = id ?? ''; return }
+    if (location.hash !== `#${id}`) location.hash = id
+  }
+  const viewsEl = $('views')
+  const titleEl = $('view-title')
+  const crumbsEl = $('crumbs')
+  const rootsEl = $('roots')
+  const legendEl = $('legend')
+  const hintEl = $('hint')
+  const editToggle = $('edit-toggle')
+  const editbar = $('editbar')
+  const editStatus = $('edit-status')
+  const saveButton = $('save')
+  const discardButton = $('discard')
+  const editor = $('editor')
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)')
+
+  let viz = null
+  let source = ''
+  let savedSource = ''
+  let revision = 0
+  let views = new Map()
+  let currentId = null
+  let editing = false
+  let editorTarget = null
+  let keepBarOpen = false
+  const DRAFT_KEY = 'drilldown-draft'
+  let modelProblems = []
+  let dotOpen = false
+  let dotDraftInvalid = false
+  let dotTimer = null
+  let dotScope = 'view'
+  let dotViewId = null
+  let dotBaseSource = ''
+  let dotBaseId = null
+  const dotPanel = $('dot-panel')
+  const dotText = $('dot-text')
+  const dotStatus = $('dot-status')
+  const dotProblems = $('dot-problems')
+  const dotToggle = $('dot-toggle')
+  const editToolsEl = $('edit-tools')
+  const undoButton = $('undo')
+  const redoButton = $('redo')
+  const detailsButton = $('details')
+  const createGroupButton = $('create-group')
+  const toViewButton = $('to-view')
+  let canvas = null
+  let canvasEl = null
+  let canvasView = null
+  let canvasBadges = null
+  let doc = null
+  let syncing = false
+  let selected = null
+
+  // ---------- DOT text helpers ----------
+  function skipString(text, i) {
+    for (let j = i + 1; j < text.length; j += 1) {
+      if (text[j] === '\\') j += 1
+      else if (text[j] === '"') return j + 1
+    }
+    return text.length
+  }
+  function skipHtml(text, i) {
+    let depth = 0
+    for (let j = i; j < text.length; j += 1) {
+      if (text[j] === '<') depth += 1
+      else if (text[j] === '>') {
+        depth -= 1
+        if (depth === 0) return j + 1
+      }
+    }
+    return text.length
+  }
+  function skipComment(text, i) {
+    if (text.startsWith('//', i)) {
+      const end = text.indexOf('\n', i)
+      return end < 0 ? text.length : end
+    }
+    if (text.startsWith('/*', i)) {
+      const end = text.indexOf('*/', i + 2)
+      return end < 0 ? text.length : end + 2
+    }
+    if (text[i] === '#' && (i === 0 || text[i - 1] === '\n')) {
+      const end = text.indexOf('\n', i)
+      return end < 0 ? text.length : end
+    }
+    return i
+  }
+  function previousSignificant(text, i) {
+    let j = i - 1
+    while (j >= 0 && /\s/.test(text[j])) j -= 1
+    return j >= 0 ? text[j] : ''
+  }
+  function matchClose(text, open) {
+    const opener = text[open]
+    const closer = opener === '{' ? '}' : ']'
+    let depth = 0
+    for (let i = open; i < text.length; ) {
+      const character = text[i]
+      if (character === '"') {
+        i = skipString(text, i)
+        continue
+      }
+      const afterComment = skipComment(text, i)
+      if (afterComment !== i) {
+        i = afterComment
+        continue
+      }
+      if (character === '<' && previousSignificant(text, i) === '=') {
+        i = skipHtml(text, i)
+        continue
+      }
+      if (character === opener) depth += 1
+      else if (character === closer) {
+        depth -= 1
+        if (depth === 0) return i
+      }
+      i += 1
+    }
+    return -1
+  }
+  const BARE_ID = /[A-Za-z_\u0080-￿][\w\u0080-￿]*|-?(?:\.\d+|\d+(?:\.\d*)?)/y
+  function readId(text, i) {
+    if (text[i] === '"') {
+      const end = skipString(text, i)
+      return { value: text.slice(i + 1, end - 1).replace(/\\"/g, '"').replace(/\\\n/g, ''), end }
+    }
+    BARE_ID.lastIndex = i
+    const match = BARE_ID.exec(text)
+    return match == null ? null : { value: match[0], end: i + match[0].length }
+  }
+  function readValueEnd(text, i) {
+    if (text[i] === '"') return skipString(text, i)
+    if (text[i] === '<') return skipHtml(text, i)
+    const match = /[^\s,;\]}]+/y
+    match.lastIndex = i
+    const found = match.exec(text)
+    return found == null ? i : i + found[0].length
+  }
+  function forEachStatement(text, start, end, visit) {
+    let depth = 0
+    let atStart = true
+    for (let i = start; i < end; ) {
+      const character = text[i]
+      const afterComment = skipComment(text, i)
+      if (afterComment !== i) {
+        i = afterComment
+        continue
+      }
+      if (character === ' ' || character === '\t' || character === '\r') {
+        i += 1
+        continue
+      }
+      if (character === '\n' || character === ';') {
+        atStart = true
+        i += 1
+        continue
+      }
+      if (character === '{') {
+        depth += 1
+        atStart = true
+        i += 1
+        continue
+      }
+      if (character === '}') {
+        depth -= 1
+        atStart = true
+        i += 1
+        continue
+      }
+      if (atStart) {
+        if (visit(i, depth) === false) return
+        atStart = false
+      }
+      if (character === '"') {
+        i = skipString(text, i)
+        continue
+      }
+      if (character === '[') {
+        const close = matchClose(text, i)
+        i = close < 0 ? end : close + 1
+        continue
+      }
+      if (character === '<' && previousSignificant(text, i) === '=') {
+        i = skipHtml(text, i)
+        continue
+      }
+      i += 1
+    }
+  }
+  function splitGraphs(text) {
+    const graphs = []
+    const header = /(?:strict\s+)?(?:di)?graph\s+("(?:[^"\\]|\\.)*"|[A-Za-z_]\w*)\s*\{/y
+    for (let i = 0; i < text.length; ) {
+      const afterComment = skipComment(text, i)
+      if (afterComment !== i) {
+        i = afterComment
+        continue
+      }
+      if (/\s/.test(text[i])) {
+        i += 1
+        continue
+      }
+      header.lastIndex = i
+      const match = header.exec(text)
+      if (match == null) {
+        i += 1
+        continue
+      }
+      const open = match.index + match[0].length - 1
+      const close = matchClose(text, open)
+      if (close < 0) break
+      const name = readId(text, match.index + match[0].indexOf(match[1])).value
+      graphs.push({ id: name, start: match.index, end: close + 1 })
+      i = close + 1
+    }
+    return graphs
+  }
+  function decodeDot(value) {
+    return String(value ?? '').replace(/\\(.)/g, (whole, character) =>
+      character === 'n' || character === 'l' || character === 'r' ? '\n' : character === '\\' ? '\\' : whole
+    )
+  }
+  function quoteDot(value) {
+    return `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n')}"`
+  }
+  function idToken(name) {
+    return /^[A-Za-z_\u0080-￿][\w\u0080-￿]*$/.test(name) ? name : quoteDot(name)
+  }
+  function lineIndentAfter(text, open) {
+    const match = /\n([ \t]+)\S/.exec(text.slice(open, open + 400))
+    return match == null ? '  ' : match[1]
+  }
+  function setStatementAttr(text, open, key, value) {
+    const close = matchClose(text, open)
+    let found = null
+    forEachStatement(text, open + 1, close, (position, depth) => {
+      if (depth !== 0) return
+      const match = /^([A-Za-z_]\w*)[ \t]*=[ \t]*/.exec(text.slice(position, position + 120))
+      if (match != null && match[1] === key) {
+        found = { start: position, valueStart: position + match[0].length }
+        return false
+      }
+    })
+    if (found != null) {
+      const valueEnd = readValueEnd(text, found.valueStart)
+      if (value === '') {
+        const lineStart = text.lastIndexOf('\n', found.start) + 1
+        const onlyIndentBefore = /^[ \t]*$/.test(text.slice(lineStart, found.start))
+        let removeEnd = valueEnd
+        if (text[removeEnd] === ';') removeEnd += 1
+        if (onlyIndentBefore && text[removeEnd] === '\n') return text.slice(0, lineStart) + text.slice(removeEnd + 1)
+        return text.slice(0, found.start) + text.slice(removeEnd)
+      }
+      return text.slice(0, found.valueStart) + quoteDot(value) + text.slice(valueEnd)
+    }
+    if (value === '') return text
+    return `${text.slice(0, open + 1)}\n${lineIndentAfter(text, open)}${key}=${quoteDot(value)}${text.slice(open + 1)}`
+  }
+  function setListAttr(text, bracket, key, value) {
+    const close = matchClose(text, bracket)
+    let i = bracket + 1
+    while (i < close) {
+      while (i < close && /[\s,;]/.test(text[i])) i += 1
+      const name = readId(text, i)
+      if (name == null) {
+        i += 1
+        continue
+      }
+      let j = name.end
+      while (/[ \t]/.test(text[j])) j += 1
+      if (text[j] !== '=') {
+        i = j
+        continue
+      }
+      j += 1
+      while (/[ \t]/.test(text[j])) j += 1
+      const valueEnd = readValueEnd(text, j)
+      if (name.value === key) {
+        if (value === '') {
+          let removeStart = i
+          while (removeStart > bracket + 1 && /[ \t,]/.test(text[removeStart - 1])) removeStart -= 1
+          return text.slice(0, removeStart) + text.slice(valueEnd)
+        }
+        return text.slice(0, j) + quoteDot(value) + text.slice(valueEnd)
+      }
+      i = valueEnd
+    }
+    if (value === '') return text
+    const separator = text[close - 1] === '[' ? '' : ' '
+    return `${text.slice(0, close)}${separator}${key}=${quoteDot(value)}${text.slice(close)}`
+  }
+  function graphOpen(blockText) {
+    return blockText.indexOf('{', blockText.search(/graph\s/))
+  }
+  function setNodeAttr(blockText, nodeName, key, value) {
+    const open = graphOpen(blockText)
+    const close = matchClose(blockText, open)
+    let bracket = -1
+    forEachStatement(blockText, open + 1, close, position => {
+      const id = readId(blockText, position)
+      if (id == null || id.value !== nodeName) return
+      let j = id.end
+      while (/[ \t]/.test(blockText[j])) j += 1
+      if (blockText[j] === '[') {
+        bracket = j
+        return false
+      }
+    })
+    if (bracket >= 0) return setListAttr(blockText, bracket, key, value)
+    if (value === '') return blockText
+    const indent = lineIndentAfter(blockText, open)
+    const lineStart = blockText.lastIndexOf('\n', close - 1) + 1
+    const insertAt = /^[ \t]*$/.test(blockText.slice(lineStart, close)) ? lineStart : close
+    const prefix = insertAt === close ? '\n' : ''
+    return `${blockText.slice(0, insertAt)}${prefix}${indent}${idToken(nodeName)} [${key}=${quoteDot(value)}]\n${blockText.slice(insertAt)}`
+  }
+  function setClusterAttr(blockText, clusterName, key, value) {
+    const open = graphOpen(blockText)
+    const close = matchClose(blockText, open)
+    let clusterOpen = -1
+    forEachStatement(blockText, open + 1, close, position => {
+      if (!blockText.startsWith('subgraph', position)) return
+      let j = position + 'subgraph'.length
+      while (/\s/.test(blockText[j])) j += 1
+      const id = readId(blockText, j)
+      if (id == null || id.value !== clusterName) return
+      clusterOpen = blockText.indexOf('{', id.end)
+      return false
+    })
+    return clusterOpen < 0 ? blockText : setStatementAttr(blockText, clusterOpen, key, value)
+  }
+  function setGraphAttr(blockText, key, value) {
+    return setStatementAttr(blockText, graphOpen(blockText), key, value)
+  }
+
+  // ---------- model ----------
+  function lineAt(text, index) {
+    let line = 1
+    for (let i = text.indexOf('\n'); i >= 0 && i < index; i = text.indexOf('\n', i + 1)) line += 1
+    return line
+  }
+  function buildModel(text) {
+    const blocks = splitGraphs(text)
+    const next = new Map()
+    const graphs = []
+    const errors = []
+    for (const block of blocks) {
+      const blockText = text.slice(block.start, block.end)
+      const firstLine = lineAt(text, block.start)
+      const result = viz.render(blockText, { format: 'json0', ...LAYOUT })
+      if (result.status !== 'success') {
+        const failures = result.errors.filter(entry => entry.level === 'error')
+        for (const failure of failures.length > 0 ? failures : [{ message: 'Graphviz could not read this view.' }]) {
+          const match = /line (\d+)/.exec(failure.message)
+          const line = match == null ? firstLine : firstLine + Number(match[1]) - 1
+          errors.push({ line, message: `Line ${line}: ${failure.message.trim().replace(/ in line \d+/, '')}` })
+        }
+        continue
+      }
+      const json = JSON.parse(result.output)
+      graphs.push(json)
+      const objects = new Map()
+      for (const object of json.objects ?? []) objects.set(object.name, object)
+      next.set(block.id, {
+        id: block.id,
+        text: blockText,
+        title: decodeDot(json.title ?? block.id),
+        parent: json.parent ?? '',
+        caption: decodeDot(json.caption ?? ''),
+        notes: decodeDot(json.notes ?? ''),
+        legend: json.legend ?? '',
+        objects,
+        graph: json,
+        section: views.get(block.id)?.section ?? null,
+        renderedRevision: -1,
+      })
+    }
+    if (blocks.length === 0) errors.push({ line: 1, message: 'No views found. Each view starts with digraph name {.' })
+    return { next, errors, problems: errors.length > 0 ? [] : validateModel(graphs) }
+  }
+  function applyModel(built) {
+    views = built.next
+    modelProblems = built.problems
+    for (const section of [...viewsEl.querySelectorAll('section.view')]) {
+      if (!views.has(section.dataset.view)) section.remove()
+    }
+    applyPalette()
+  }
+  function applyPalette() {
+    const rules = []
+    for (const [name, entry] of legendEntries()) {
+      if (entry.color == null) continue
+      rules.push(
+        `{ --${name}-fill: color-mix(in srgb, ${entry.color} 18%, var(--panel)); --${name}-line: color-mix(in srgb, ${entry.color} 82%, var(--fg)); }`,
+        `.stage .node.${name} { color: var(--${name}-line); }`,
+        name === 'ghost' ? '' : `.stage .node.${name} :is(path, polygon, ellipse) { fill: var(--${name}-fill); stroke: var(--${name}-line); }`
+      )
+    }
+    // One stylesheet per widget, scoped by an attribute selector, so two
+    // models with different legends do not overwrite each other's colours.
+    let style = root.querySelector('style[data-dd-palette]')
+    if (style == null) {
+      style = document.createElement('style')
+      style.setAttribute('data-dd-palette', '')
+      root.append(style)
+    }
+    const scope = `[data-dd-root][data-dd-name="${INSTANCE}"]`
+    style.textContent = rules.map(rule => `${scope} ${rule}`).join('\n')
+  }
+  function parseModel() {
+    applyModel(buildModel(source))
+  }
+  function editView(id, change) {
+    const block = splitGraphs(source).find(candidate => candidate.id === id)
+    if (block == null) return
+    const before = source.slice(block.start, block.end)
+    const after = change(before)
+    if (after !== before) source = source.slice(0, block.start) + after + source.slice(block.end)
+  }
+  function commitEdits() {
+    revision += 1
+    parseModel()
+    if (views.has(currentId)) renderCurrent()
+    else {
+      currentId = null
+      go(roots()[0]?.id)
+    }
+    syncDocument()
+    updateDirty()
+    if (dotOpen && !dotDraftInvalid && document.activeElement !== dotText) loadDot()
+  }
+  function legendEntries() {
+    return parseLegend([...views.values()].map(view => view.graph))
+  }
+  function classLabel(name, entry) {
+    if (entry?.label) return entry.label
+    return name === 'ghost' ? 'Lives in another view' : name[0].toUpperCase() + name.slice(1).replace(/-/g, ' ')
+  }
+  function roots() {
+    return [...views.values()].filter(view => view.parent === '' || !views.has(view.parent))
+  }
+  function ancestry(id) {
+    const chain = []
+    const seen = new Set()
+    let view = views.get(id)
+    while (view != null && !seen.has(view.id)) {
+      seen.add(view.id)
+      chain.unshift(view.id)
+      view = views.get(view.parent)
+    }
+    return chain
+  }
+
+  // ---------- DOT editor ----------
+  const DOT_KEYWORDS = new Set(['digraph', 'graph', 'subgraph', 'node', 'edge', 'strict'])
+  const PAGE_ATTRIBUTES = new Set(['title', 'parent', 'caption', 'notes', 'legend', 'description', 'URL', 'class', 'tooltip'])
+  const DOT_TOKENS =
+    /(\/\/[^\n]*|\/\*[\s\S]*?(?:\*\/|$)|^#[^\n]*)|("(?:[^"\\]|\\[\s\S])*"?)|(<(?:[^<>]|<[^<>]*>)*>?)|(->|--)|([A-Za-z_\u0080-￿][\w\u0080-￿]*)(?=[ \t]*=)|([A-Za-z_\u0080-￿][\w\u0080-￿]*)|(-?(?:\.\d+|\d+(?:\.\d*)?))|([{}[\];,=])/gm
+  function escapeHtml(text) {
+    return text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
+  }
+  function tokenKind([, comment, string, htmlLabel, arrow, attribute, word, number, punctuation]) {
+    if (comment) return 'c'
+    if (string || htmlLabel || number) return 's'
+    if (arrow) return 'o'
+    if (attribute) return PAGE_ATTRIBUTES.has(attribute) ? 'm' : 'a'
+    if (word) return DOT_KEYWORDS.has(word) ? 'k' : ''
+    if (punctuation) return 'p'
+    return ''
+  }
+  function highlightDot(text) {
+    let html = ''
+    let last = 0
+    for (const match of text.matchAll(DOT_TOKENS)) {
+      const kind = tokenKind(match)
+      html += escapeHtml(text.slice(last, match.index))
+      html += kind === '' ? escapeHtml(match[0]) : `<span class="t-${kind}">${escapeHtml(match[0])}</span>`
+      last = match.index + match[0].length
+    }
+    return html + escapeHtml(text.slice(last))
+  }
+  const dotHighlight = $('dot-highlight')
+  function syncDotScroll() {
+    dotHighlight.scrollTop = dotText.scrollTop
+    dotHighlight.scrollLeft = dotText.scrollLeft
+  }
+  function paintDot() {
+    dotHighlight.innerHTML = `${highlightDot(dotText.value)}\n`
+    syncDotScroll()
+  }
+  function setDotValue(text) {
+    dotText.value = text
+    paintDot()
+  }
+  function selectLine(line) {
+    const lines = dotText.value.split('\n')
+    const start = lines.slice(0, line - 1).reduce((total, text) => total + text.length + 1, 0)
+    dotText.focus({ preventScroll: true })
+    dotText.setSelectionRange(start, start + (lines[line - 1]?.length ?? 0))
+    scrollDotToLine(line)
+  }
+  function scrollDotToLine(line) {
+    const lineHeight = Number.parseFloat(getComputedStyle(dotText).lineHeight) || 20
+    dotText.scrollTop = Math.max(0, (line - 3) * lineHeight)
+  }
+  function blockRange(text, id) {
+    return splitGraphs(text).find(candidate => candidate.id === id) ?? null
+  }
+  function revealViewInDot(id) {
+    if (!dotOpen || dotScope !== 'model' || document.activeElement === dotText) return
+    const block = blockRange(dotText.value, id)
+    if (block != null) scrollDotToLine(lineAt(dotText.value, block.start))
+  }
+  function rewriteReferences(blockText, oldId, newId) {
+    const result = viz.render(blockText, { format: 'json0', ...LAYOUT })
+    if (result.status !== 'success') return { text: blockText, count: 0 }
+    const graph = JSON.parse(result.output)
+    let text = blockText
+    let count = 0
+    if (graph.parent === oldId) {
+      text = setGraphAttr(text, 'parent', newId)
+      count += 1
+    }
+    for (const object of graph.objects ?? []) {
+      if (object.URL !== `#${oldId}`) continue
+      text = (object.name.startsWith('cluster') ? setClusterAttr : setNodeAttr)(text, object.name, 'URL', `#${newId}`)
+      count += 1
+    }
+    return { text, count }
+  }
+  function spliceView(baseSource, baseId, panelText, renameTo) {
+    let text = ''
+    let last = 0
+    let panelStart = -1
+    let count = 0
+    for (const block of splitGraphs(baseSource)) {
+      text += baseSource.slice(last, block.start)
+      const blockText = baseSource.slice(block.start, block.end)
+      if (block.id === baseId && panelStart < 0) {
+        panelStart = text.length
+        text += panelText
+      } else if (renameTo != null) {
+        const rewritten = rewriteReferences(blockText, baseId, renameTo)
+        text += rewritten.text
+        count += rewritten.count
+      } else text += blockText
+      last = block.end
+    }
+    text += baseSource.slice(last)
+    if (panelStart < 0) {
+      panelStart = text.length + 1
+      text = `${text}\n${panelText}`
+    }
+    return { text, count, lineOffset: lineAt(text, panelStart) - 1 }
+  }
+  function loadDot() {
+    dotBaseSource = source
+    dotBaseId = currentId
+    dotViewId = currentId
+    const range = dotScope === 'view' ? blockRange(source, currentId) : null
+    setDotValue(dotScope === 'model' ? source : range == null ? '' : source.slice(range.start, range.end))
+    dotText.scrollTop = 0
+    dotText.scrollLeft = 0
+    syncDotScroll()
+    $('dot-heading').textContent = dotScope === 'model' ? 'model.dot' : `digraph ${currentId}`
+    $('dot-scope-view').setAttribute('aria-pressed', String(dotScope === 'view'))
+    $('dot-scope-model').setAttribute('aria-pressed', String(dotScope === 'model'))
+    showDotState([])
+    revealViewInDot(currentId)
+  }
+  function followViewInDot(id) {
+    if (!dotOpen) return
+    if (dotScope === 'view') {
+      if (dotViewId !== id) loadDot()
+    } else revealViewInDot(id)
+  }
+  function setDotScope(scope) {
+    if (scope === dotScope) return
+    if (dotDraftInvalid) {
+      setStatus('Fix the DOT error before switching what the editor shows.', 'bad')
+      return
+    }
+    dotScope = scope
+    loadDot()
+    dotText.focus({ preventScroll: true })
+  }
+  function showDotState(errors) {
+    const items = errors.length > 0 ? errors : modelProblems.map(message => ({ message }))
+    dotProblems.replaceChildren(
+      ...items.map(item => {
+        const entry = document.createElement('li')
+        if (item.line != null) {
+          const button = document.createElement('button')
+          button.type = 'button'
+          button.textContent = item.message
+          button.addEventListener('click', () => selectLine(item.line))
+          entry.append(button)
+        } else entry.textContent = item.message
+        return entry
+      })
+    )
+    dotProblems.hidden = items.length === 0
+    if (errors.length > 0) {
+      dotStatus.textContent = `Not applied: ${errors.length === 1 ? '1 error' : `${errors.length} errors`}. The diagram shows the last version that worked.`
+      dotStatus.className = 'dot-status bad'
+    } else if (modelProblems.length > 0) {
+      dotStatus.textContent = 'Applied, but fix these before saving:'
+      dotStatus.className = 'dot-status warn'
+    } else {
+      dotStatus.textContent =
+        dotScope === 'view'
+          ? 'Up to date. Changes to this view apply as you type; add another digraph here to create a new view.'
+          : `Up to date. ${views.size === 1 ? '1 view' : `${views.size} views`}; changes apply as you type.`
+      dotStatus.className = 'dot-status ok'
+    }
+  }
+  function setDotOpen(on) {
+    dotOpen = on
+    dotPanel.hidden = !on
+    root.classList.toggle('has-dot-panel', on)
+    dotToggle.setAttribute('aria-pressed', String(on))
+    dotToggle.textContent = on ? 'Hide DOT' : 'Edit DOT'
+    if (!on) return
+    closeEditor()
+    document.documentElement.style.setProperty('--editbar-height', `${editbar.offsetHeight}px`)
+    if (!dotDraftInvalid) loadDot()
+    dotText.focus({ preventScroll: true })
+  }
+  function dotFailure(errors) {
+    dotDraftInvalid = true
+    showDotState(errors)
+    updateDirty()
+  }
+  function applyDotText() {
+    const text = dotText.value
+    let candidate = text
+    let lineOffset = 0
+    let referencesUpdated = 0
+    const panelIds = splitGraphs(text).map(block => block.id)
+    const panelId = panelIds.includes(dotBaseId) ? dotBaseId : panelIds[0]
+    if (dotScope === 'view') {
+      if (panelIds.length === 0) {
+        dotFailure([{ line: 1, message: 'Line 1: this editor holds the current view, so it needs a digraph name { … } block.' }])
+        return
+      }
+      const baseIds = splitGraphs(dotBaseSource).map(block => block.id)
+      const renameTo = panelId !== dotBaseId && !baseIds.includes(panelId) ? panelId : null
+      const spliced = spliceView(dotBaseSource, dotBaseId, text, renameTo)
+      candidate = spliced.text
+      lineOffset = spliced.lineOffset
+      referencesUpdated = spliced.count
+    }
+    if (candidate === source) {
+      dotDraftInvalid = false
+      showDotState([])
+      updateDirty()
+      return
+    }
+    const built = buildModel(candidate)
+    if (built.errors.length > 0) {
+      dotFailure(
+        built.errors.map(error => {
+          const line = Math.max(1, error.line - lineOffset)
+          return { line, message: error.message.replace(/^Line \d+/, `Line ${line}`) }
+        })
+      )
+      return
+    }
+    dotDraftInvalid = false
+    source = candidate
+    revision += 1
+    applyModel(built)
+    if (dotScope === 'view') dotViewId = views.has(panelId) ? panelId : panelIds[0]
+    const target = dotScope === 'view' ? dotViewId : currentId
+    if (target === currentId && views.has(currentId)) renderCurrent()
+    else {
+      currentId = null
+      go(views.has(target) ? target : roots()[0]?.id)
+    }
+    $('dot-heading').textContent = dotScope === 'model' ? 'model.dot' : `digraph ${dotViewId}`
+    showDotState([])
+    if (referencesUpdated > 0 && modelProblems.length === 0) {
+      dotStatus.textContent = `Up to date. Renamed this view and updated ${referencesUpdated === 1 ? '1 reference' : `${referencesUpdated} references`} to it in other views.`
+    }
+    updateDirty()
+  }
+  function blockedByDotDraft() {
+    if (!dotDraftInvalid) return false
+    setStatus('The DOT editor has an error. Fix it or discard your changes first.', 'bad')
+    return true
+  }
+
+  // ---------- rendering ----------
+  function ensureSection(view) {
+    if (view.section != null) return view.section
+    const section = document.createElement('section')
+    section.className = 'view'
+    section.dataset.view = view.id
+    section.hidden = true
+    section.innerHTML = `<figure class="figure"><div class="stage"></div><div class="detail" hidden></div><figcaption data-placeholder="Add a caption that says how to read this diagram"></figcaption></figure><p class="notes" data-placeholder="Add notes"></p><details class="source"><summary>DOT source for this view</summary><div class="source-bar"><button type="button" class="tool copy">Copy</button></div><pre><code></code></pre></details>`
+    viewsEl.append(section)
+    view.section = section
+    return section
+  }
+  const WRAP_AT = 24
+  function wrapLabel(raw) {
+    if (typeof raw !== 'string' || raw.length <= WRAP_AT || /\\[nlr]/.test(raw)) return raw
+    const middle = raw.length / 2
+    let best = -1
+    for (let i = raw.indexOf(' '); i !== -1; i = raw.indexOf(' ', i + 1)) {
+      if (best === -1 || Math.abs(i - middle) < Math.abs(best - middle)) best = i
+    }
+    return best === -1 ? raw : `${raw.slice(0, best)}\\n${raw.slice(best + 1)}`
+  }
+  function wrapGroupLabels(blockText) {
+    let text = blockText
+    let model
+    try {
+      model = Editor.describe(text, { graph: 0 })
+    } catch {
+      return text
+    }
+    for (const subgraph of model.subgraphs.values()) {
+      if (!subgraph.isCluster) continue
+      const wrapped = wrapLabel(subgraph.attrs.label)
+      if (wrapped !== subgraph.attrs.label) text = Editor.applyEdit(text, { type: 'setGraphAttr', graph: 0, subgraph: subgraph.id, key: 'label', value: wrapped })
+    }
+    return text
+  }
+  function drawSvg(blockText, title, viewId) {
+    const svg = viz.renderSVGElement(wrapGroupLabels(blockText), LAYOUT)
+    const width = svg.viewBox?.baseVal?.width ?? Number.parseFloat(svg.getAttribute('width'))
+    svg.removeAttribute('width')
+    svg.removeAttribute('height')
+    svg.style.setProperty('--view-width', String(Math.round(width)))
+    svg.setAttribute('role', 'img')
+    svg.setAttribute('aria-label', title)
+    for (const element of svg.querySelectorAll('[id]')) element.id = `${viewId}--${element.id}`
+    for (const group of svg.querySelectorAll('g.node, g.cluster')) {
+      group.dataset.name = group.querySelector(':scope > title')?.textContent ?? ''
+      const anchor = group.querySelector('a')
+      const href = anchor?.getAttributeNS(XLINK, 'href') ?? anchor?.getAttribute('href') ?? ''
+      if (href.startsWith('#')) {
+        group.classList.add('drill')
+        group.dataset.target = href.slice(1)
+      }
+    }
+    return svg
+  }
+  function showText(element, value) {
+    if (editing) element.textContent = value
+    else element.innerHTML = Editor.renderMarkdown(value)
+  }
+  function renderView(view) {
+    const section = ensureSection(view)
+    const stage = section.querySelector('.stage')
+    if (editing && view.id === currentId && view.error == null) {
+      mountCanvas(view)
+    } else {
+      let svg = null
+      try {
+        if (view.error != null) throw view.error
+        svg = drawSvg(view.text, view.title, view.id)
+      } catch (failure) {
+        const message = document.createElement('p')
+        message.className = 'load-error'
+        message.textContent = `This view could not be drawn: ${failure?.message ?? failure}`
+        stage.replaceChildren(message)
+      }
+      if (svg != null) stage.replaceChildren(svg)
+    }
+    showText(section.querySelector('figcaption'), view.caption)
+    showText(section.querySelector('.notes'), view.notes)
+    section.querySelector('.source code').innerHTML = highlightDot(view.text)
+    section.querySelector('.detail').hidden = true
+    view.renderedRevision = revision
+    if (!section.hidden) decorate(view)
+  }
+  function decorate(view) {
+    addBadges(view.section)
+    applyEditAffordances(view)
+  }
+  function addBadges(section) {
+    for (const node of section.querySelectorAll('.stage g.node.drill:not(.ghost)')) {
+      if (node.querySelector('.badge') != null) continue
+      const shape = node.querySelector('path, polygon, ellipse')
+      const anchor = node.querySelector('a') ?? node
+      if (shape == null) continue
+      const box = shape.getBBox()
+      const badge = document.createElementNS(SVG_NS, 'g')
+      badge.setAttribute('class', 'badge')
+      badge.setAttribute('transform', `translate(${box.x + box.width - 3} ${box.y + 3})`)
+      const circle = document.createElementNS(SVG_NS, 'circle')
+      circle.setAttribute('r', '7.5')
+      const mark = document.createElementNS(SVG_NS, 'path')
+      mark.setAttribute('d', 'M-3 -3 L3 3 M3 -1 L3 3 L-1 3')
+      badge.append(circle, mark)
+      anchor.append(badge)
+    }
+  }
+  function applyEditAffordances(view) {
+    const section = view.section
+    if (section == null) return
+    for (const group of section.querySelectorAll('.stage g.node, .stage g.cluster')) {
+      if (group.closest('.edit-canvas') != null) continue
+      if (editing && group.querySelector('a') == null) group.setAttribute('tabindex', '0')
+      else group.removeAttribute('tabindex')
+      if (editing) group.setAttribute('aria-label', `Edit ${labelOf(view, group.dataset.name) || group.dataset.name}`)
+      else group.removeAttribute('aria-label')
+    }
+    for (const element of [section.querySelector('figcaption'), section.querySelector('.notes')]) {
+      setEditable(element, editing)
+    }
+  }
+  function setEditable(element, on) {
+    if (!on) {
+      element.removeAttribute('contenteditable')
+      return
+    }
+    try {
+      element.contentEditable = 'plaintext-only'
+    } catch {
+      element.contentEditable = 'true'
+    }
+  }
+  function blockOf(text, id) {
+    const block = splitGraphs(text).find(candidate => candidate.id === id)
+    return block == null ? '' : text.slice(block.start, block.end)
+  }
+  function mountCanvas(view) {
+    const stage = view.section.querySelector('.stage')
+    if (canvas == null || canvasView !== view.id || !stage.contains(canvasEl)) {
+      unmountCanvas()
+      canvasEl = document.createElement('div')
+      canvasEl.className = 'edit-canvas'
+      stage.replaceChildren(canvasEl)
+      canvasView = view.id
+      canvasBadges = new MutationObserver(() => addBadges(view.section))
+      canvasBadges.observe(canvasEl, { childList: true })
+      canvas = Editor.createDotCanvas(canvasEl, {
+        render: text => drawSvg(blockOf(text, view.id), views.get(view.id)?.title ?? view.id, view.id),
+        onEdit: applyCanvasEdit,
+        onSelect: showSelection,
+        onOpen: id => go(id),
+        onToolChange: tool => createGroupButton.setAttribute('aria-pressed', String(tool === 'box')),
+        onContextMenu: ({ target }) => openDetails(target),
+        graph: view.id,
+        defaults: { node: LAYOUT.nodeAttributes, edge: LAYOUT.edgeAttributes, cluster: {} },
+        newNodeLabel: 'New node',
+        newClusterLabel: 'New group',
+      })
+    }
+    canvas.setSource(source)
+    revealLabelField()
+  }
+  function revealLabelField() {
+    requestAnimationFrame(() => {
+      const field = canvasEl?.querySelector('.dc-editor')
+      if (field == null) return
+      const box = field.getBoundingClientRect()
+      const limit = editbar.hidden ? window.innerHeight : editbar.getBoundingClientRect().top
+      if (box.top < 0 || box.bottom > limit - 8) field.scrollIntoView({ block: 'center', behavior: reducedMotion.matches ? 'auto' : 'smooth' })
+    })
+  }
+  function unmountCanvas() {
+    if (canvas == null) return
+    canvas.destroy()
+    canvasBadges?.disconnect()
+    canvasBadges = null
+    const view = views.get(canvasView)
+    if (view != null) view.renderedRevision = -1
+    canvas = null
+    canvasEl = null
+    canvasView = null
+    showSelection(null)
+  }
+  function stylePalette() {
+    const legend = legendEntries()
+    const names = [...new Set([...HUES.filter(hue => hue !== 'ghost'), ...[...legend.keys()].filter(name => name !== 'ghost' && legend.get(name).color != null)])]
+    return names.map(name => ({
+      name: classLabel(name, legend.get(name)),
+      class: name,
+      fill: { light: `var(--${name}-fill)`, dark: `var(--${name}-fill)` },
+      line: { light: `var(--${name}-line)`, dark: `var(--${name}-line)` },
+    }))
+  }
+  function showSelection(target) {
+    selected = target
+    const bar = $('style-bar')
+    bar.replaceChildren()
+    detailsButton.disabled = target == null || target.kind === 'edge'
+    toViewButton.disabled = target?.kind !== 'cluster' || target.link != null
+    if (target == null || target.ghost) return
+    Editor.createStyleBar(bar, { onEdit: applyCanvasEdit, palette: stylePalette(), classLabel: name => legendEntries().get(name)?.label || null }).show(target)
+  }
+  function openDetails(target) {
+    if (target == null || target.kind === 'edge' || canvasEl == null) return
+    const group = [...canvasEl.querySelectorAll('g.node, g.cluster')].find(candidate => candidate.dataset.name === target.id)
+    if (group != null) openEditor(group)
+  }
+  function withGraph(edit) {
+    if (edit.type === 'batch') return { ...edit, edits: edit.edits.map(withGraph) }
+    return edit.graph == null && !['addView', 'removeView', 'renameView'].includes(edit.type) ? { ...edit, graph: currentId } : edit
+  }
+  function checkText(text, allowed) {
+    const built = buildModel(text)
+    if (built.errors.length > 0) throw new Error(built.errors[0].message)
+    const fresh = built.problems.filter(problem => !allowed.includes(problem))
+    if (fresh.length > 0) throw new Error(fresh[0])
+  }
+  function makeDocument(text) {
+    const allowed = buildModel(text).problems
+    return Editor.createDotDocument(text, {
+      validate: next => checkText(next, allowed),
+      onChange: next => {
+        if (syncing) return
+        source = next
+        commitEdits()
+      },
+    })
+  }
+  function syncDocument() {
+    if (doc == null || doc.text === source) return
+    syncing = true
+    const result = doc.replace(source)
+    syncing = false
+    if (!result.ok) {
+      try {
+        doc = makeDocument(source)
+      } catch {
+        doc = null
+      }
+    }
+  }
+  function applyCanvasEdit(edit) {
+    if (blockedByDotDraft()) return
+    syncDocument()
+    if (doc == null) {
+      setStatus('This model has a problem the editor cannot work around; fix it in Edit DOT.', 'bad')
+      return
+    }
+    let next
+    try {
+      next = Editor.impliedEdit(doc.text, withGraph(edit))
+    } catch (failure) {
+      setStatus(`Not changed: ${String(failure?.message ?? failure).split('\n')[0]}`, 'bad')
+      return
+    }
+    const result = doc.apply(next)
+    if (!result.ok) setStatus(`Not changed: ${String(result.error?.message ?? result.error).split('\n')[0]}`, 'bad')
+  }
+  function addNode() {
+    if (canvas == null || blockedByDotDraft()) return
+    const node = Editor.newNodeId(source, { label: 'New node' })
+    applyCanvasEdit({ type: 'addNode', node, attrs: { label: 'New node' } })
+    const target = { kind: 'node', id: node }
+    if (canvas != null && splitGraphs(source).some(block => block.id === currentId)) {
+      canvas.select(target)
+      canvas.editLabel(target)
+      revealLabelField()
+    }
+  }
+  function turnIntoView() {
+    if (selected?.kind !== 'cluster' || blockedByDotDraft()) return
+    const before = new Set(views.keys())
+    applyCanvasEdit({ type: 'clusterToView', cluster: selected.id })
+    const made = [...views.values()].find(view => !before.has(view.id))
+    if (made != null) setStatus(`Unsaved changes. “${made.title}” is now its own view; click its thick outline to open it.`, '')
+  }
+  function renderCurrent() {
+    const view = views.get(currentId)
+    if (view == null) return
+    if (view.renderedRevision !== revision) renderView(view)
+    renderChrome(currentId)
+  }
+  function updateTopButtons(id) {
+    editToggle.hidden = !canEditPage || id === MAP_ID
+    mapToggle.hidden = editing || ![...views.values()].some(view => mapChildren(view.id).length > 0)
+    mapToggle.setAttribute('aria-pressed', String(id === MAP_ID))
+  }
+  function renderLegend(section) {
+    const legend = legendEntries()
+    const present = new Set()
+    for (const node of section?.querySelectorAll('.stage g.node') ?? []) {
+      for (const name of node.classList) if (!['node', 'drill', 'came-from', 'is-selected'].includes(name)) present.add(name)
+    }
+    const order = [...new Set([...HUES.filter(hue => hue !== 'ghost'), ...legend.keys(), 'ghost'])]
+    legendEl.replaceChildren(
+      ...order
+        .filter(name => present.has(name))
+        .map(name => {
+          const chip = document.createElement('span')
+          chip.className = 'chip'
+          const swatch = document.createElement('span')
+          swatch.className = 'swatch'
+          if (name === 'ghost') {
+            swatch.classList.add('ghost')
+            if (legend.get('ghost')?.color != null) swatch.style.borderColor = 'var(--ghost-line)'
+          } else {
+            swatch.style.background = `var(--${name}-fill)`
+            swatch.style.borderColor = `var(--${name}-line)`
+          }
+          chip.append(swatch, classLabel(name, legend.get(name)))
+          return chip
+        })
+    )
+  }
+  function renderChrome(id) {
+    updateTopButtons(id)
+    if (id === MAP_ID) {
+      renderMapChrome()
+      return
+    }
+    const view = views.get(id)
+    const chain = ancestry(id)
+    crumbsEl.replaceChildren(
+      ...chain.map((viewId, index) => {
+        const item = document.createElement('li')
+        const title = views.get(viewId).title
+        if (index === chain.length - 1) {
+          const span = document.createElement('span')
+          span.setAttribute('aria-current', 'page')
+          span.textContent = title
+          item.append(span)
+        } else {
+          const button = document.createElement('button')
+          button.type = 'button'
+          button.textContent = title
+          button.addEventListener('click', () => go(viewId))
+          item.append(button)
+        }
+        return item
+      })
+    )
+    rootsEl.replaceChildren(
+      ...roots().map(root => {
+        const button = document.createElement('button')
+        button.type = 'button'
+        button.textContent = root.title
+        button.setAttribute('aria-pressed', String(chain[0] === root.id))
+        button.addEventListener('click', () => go(root.id))
+        return button
+      })
+    )
+    rootsEl.hidden = roots().length < 2
+    if (!(editing && document.activeElement === titleEl)) titleEl.textContent = view.title
+    renderLegend(view.section)
+    if (editing) hintEl.textContent = EDIT_HINT
+    else hintEl.innerHTML = view.section?.querySelector('.drill') != null ? VIEW_HINT : ''
+  }
+  function centerOf(element, container) {
+    const rect = element.getBoundingClientRect()
+    const host = container.getBoundingClientRect()
+    return `${rect.left + rect.width / 2 - host.left}px ${rect.top + rect.height / 2 - host.top}px`
+  }
+  function show(requestedId, originEl) {
+    if (requestedId === MAP_ID) {
+      showMap()
+      return
+    }
+    const id = views.has(requestedId) ? requestedId : roots()[0]?.id
+    if (id == null || id === currentId) return
+    if (dotOpen && dotDraftInvalid && dotScope === 'view' && currentId != null) {
+      setStatus('Fix the DOT error in this view before leaving it, or discard your changes.', 'bad')
+      try {
+        writeRoute(currentId)
+      } catch {}
+      return
+    }
+    closeEditor()
+    const previousId = currentId
+    const next = views.get(id)
+    const goingUp = previousId != null && ancestry(previousId).includes(id)
+    const section = ensureSection(next)
+    if (previousId != null) views.get(previousId)?.section?.setAttribute('hidden', '')
+    if (previousId === MAP_ID) mapSection?.setAttribute('hidden', '')
+    section.hidden = false
+    currentId = id
+    if (editing) unmountCanvas()
+    if (next.renderedRevision !== revision || editing) renderView(next)
+    else decorate(next)
+    renderChrome(id)
+    followViewInDot(id)
+
+    const figure = section.querySelector('.figure')
+    let cameFrom = null
+    if (goingUp) {
+      const chain = ancestry(previousId)
+      const childOnPath = chain[chain.indexOf(id) + 1]
+      cameFrom = section.querySelector(`[data-target="${CSS.escape(childOnPath)}"]`)
+    }
+    if (!reducedMotion.matches && previousId != null) {
+      const anchor = goingUp ? cameFrom : originEl
+      figure.style.transformOrigin = anchor != null ? centerOf(anchor, figure) : '50% 50%'
+      figure.animate(
+        goingUp
+          ? [{ transform: 'scale(1.35)', opacity: 0 }, { transform: 'none', opacity: 1 }]
+          : [{ transform: 'scale(0.55)', opacity: 0 }, { transform: 'none', opacity: 1 }],
+        { duration: 280, easing: 'cubic-bezier(.2,.75,.25,1)' }
+      )
+    }
+    if (cameFrom != null) {
+      cameFrom.classList.remove('came-from')
+      void cameFrom.getBoundingClientRect()
+      cameFrom.classList.add('came-from')
+      ;(cameFrom.querySelector('a') ?? cameFrom).focus?.({ preventScroll: true })
+    } else if (previousId != null && !editing) {
+      titleEl.focus({ preventScroll: true })
+    }
+  }
+  function go(id, originEl) {
+    show(id, originEl)
+    try {
+      if (currentId != null) writeRoute(currentId)
+    } catch {}
+    keepFocus()
+  }
+  function updateFocusNote() {
+    root.classList.toggle('page-unfocused', !document.hasFocus())
+  }
+  function keepFocus() {
+    requestAnimationFrame(() => {
+      if (!document.hasFocus()) {
+        try {
+          window.focus()
+        } catch {}
+      }
+      const active = document.activeElement
+      if (active == null || active === document.body || !document.contains(active)) titleEl.focus({ preventScroll: true })
+      updateFocusNote()
+    })
+  }
+
+  // ---------- whole map ----------
+  const MAP_ID = 'whole-map'
+  const MAP_DEPTH_KEY = 'drilldown-map-depth'
+  const mapToggle = $('map-toggle')
+  let canEditPage = false
+  let mapSection = null
+  let mapRoot = null
+  let mapDepth = null
+  let mapKey = ''
+  let mapZoom = 1
+  let mapNatural = { width: 1, height: 1 }
+  let mapDrag = null
+  let mapSuppressClick = false
+  const mapOverrides = new Map()
+  let lastMapExpansion = new Map()
+
+  function childViews(id) {
+    return [...views.values()].filter(view => view.parent === id && view.id !== id)
+  }
+  function mapChildren(id) {
+    const view = views.get(id)
+    if (view == null) return []
+    const children = childViews(id).map(child => child.id)
+    for (const node of graphNodes(view.graph)) {
+      const target = viewLink(node)
+      if (node.class === 'ghost' || target == null || target === id || !views.has(target) || children.includes(target)) continue
+      children.push(target)
+    }
+    return children
+  }
+  function mapExpansion(rootId, depth, useOverrides) {
+    const level = new Map([[rootId, 0]])
+    const parentOf = new Map()
+    const queue = [rootId]
+    while (queue.length > 0) {
+      const id = queue.shift()
+      for (const child of mapChildren(id)) {
+        if (level.has(child)) continue
+        const open = (useOverrides ? mapOverrides.get(child) : undefined) ?? level.get(id) < depth
+        if (!open) continue
+        level.set(child, level.get(id) + 1)
+        parentOf.set(child, id)
+        queue.push(child)
+      }
+    }
+    return { level, parentOf }
+  }
+  function treeDepth(id) {
+    return Math.max(0, ...mapExpansion(id, Number.POSITIVE_INFINITY, false).level.values())
+  }
+  function quoteRaw(value) {
+    return `"${String(value).replace(/"/g, '\\"').replace(/\\$/, '\\\\')}"`
+  }
+  function graphNodes(graph) {
+    return (graph.objects ?? []).slice(graph._subgraph_cnt ?? 0)
+  }
+  function graphClusters(graph) {
+    return (graph.objects ?? [])
+      .slice(0, graph._subgraph_cnt ?? 0)
+      .filter(subgraph => String(subgraph.name).startsWith('cluster') && (subgraph.nodes ?? []).length > 0)
+  }
+  function viewLink(node) {
+    return typeof node?.URL === 'string' && node.URL.startsWith('#') ? node.URL.slice(1) : null
+  }
+  function buildMapDot(rootId, depth) {
+    const { level: expanded, parentOf } = mapExpansion(rootId, depth, true)
+    lastMapExpansion = expanded
+    const nodeIn = (viewId, name) => graphNodes(views.get(viewId).graph).find(node => node.name === name)
+    const resolve = (viewId, name, hops = 0) => {
+      const target = viewLink(nodeIn(viewId, name))
+      if (hops < 8 && target != null && target !== viewId && expanded.has(target)) {
+        if (parentOf.get(target) === viewId) return { cluster: target }
+        const defined = nodeIn(target, name)
+        if (defined != null && defined.class !== 'ghost') return resolve(target, name, hops + 1)
+        return { cluster: target }
+      }
+      return { node: `${viewId}::${name}`, viewId }
+    }
+    const chainOf = id => {
+      const chain = []
+      for (let current = id; current != null && !chain.includes(current); current = parentOf.get(current)) chain.push(current)
+      return chain
+    }
+    const inside = (endpoint, clusterId) => chainOf(endpoint.cluster ?? endpoint.viewId).includes(clusterId)
+
+    const edges = []
+    const seenEdges = new Set()
+    const anchors = new Set()
+    for (const viewId of expanded.keys()) {
+      const graph = views.get(viewId).graph
+      const byGvid = new Map(graphNodes(graph).map(node => [node._gvid, node]))
+      for (const edge of graph.edges ?? []) {
+        const tailNode = byGvid.get(edge.tail)
+        const headNode = byGvid.get(edge.head)
+        if (tailNode == null || headNode == null) continue
+        const tail = resolve(viewId, tailNode.name)
+        const head = resolve(viewId, headNode.name)
+        const tailKey = tail.cluster != null ? `cluster:${tail.cluster}` : tail.node
+        const headKey = head.cluster != null ? `cluster:${head.cluster}` : head.node
+        const edgeKey = `${tailKey}|${headKey}|${edge.label ?? ''}`
+        if (tailKey === headKey || seenEdges.has(edgeKey)) continue
+        seenEdges.add(edgeKey)
+        const attributes = []
+        let from = tail.node
+        let to = head.node
+        if (tail.cluster != null) {
+          from = `anchor::${tail.cluster}`
+          anchors.add(tail.cluster)
+          if (!inside(head, tail.cluster)) attributes.push(`ltail=${quoteRaw(`cluster_v_${tail.cluster}`)}`)
+        }
+        if (head.cluster != null) {
+          to = `anchor::${head.cluster}`
+          anchors.add(head.cluster)
+          if (!inside(tail, head.cluster)) attributes.push(`lhead=${quoteRaw(`cluster_v_${head.cluster}`)}`)
+        }
+        for (const key of ['label', 'style', 'dir', 'arrowhead']) if (edge[key] != null && edge[key] !== '') attributes.push(`${key}=${quoteRaw(edge[key])}`)
+        edges.push(`  ${quoteRaw(from)} -> ${quoteRaw(to)}${attributes.length > 0 ? ` [${attributes.join(' ')}]` : ''}`)
+      }
+    }
+
+    const lines = ['digraph "whole-map" {', '  compound=true', `  rankdir=${quoteRaw(views.get(rootId).graph.rankdir ?? 'TB')}`]
+    const emitted = new Set()
+    const emitNode = (viewId, node, indent) => {
+      const resolved = resolve(viewId, node.name)
+      if (resolved.node !== `${viewId}::${node.name}` || emitted.has(resolved.node)) return
+      emitted.add(resolved.node)
+      const attributes = []
+      const label = node.label == null || node.label === '\\N' ? node.name : node.label
+      attributes.push(`label=${quoteRaw(label)}`)
+      for (const key of ['class', 'shape', 'style', 'tooltip', 'description']) if (node[key] != null && node[key] !== '') attributes.push(`${key}=${quoteRaw(node[key])}`)
+      const target = viewLink(node)
+      attributes.push(`URL=${quoteRaw(`#${target != null && views.has(target) ? target : viewId}`)}`)
+      lines.push(`${indent}${quoteRaw(resolved.node)} [${attributes.join(' ')}]`)
+    }
+    const emitView = (viewId, indent) => {
+      const view = views.get(viewId)
+      const isRoot = viewId === rootId
+      const inner = isRoot ? indent : `${indent}  `
+      if (!isRoot) {
+        lines.push(
+          `${indent}subgraph ${quoteRaw(`cluster_v_${viewId}`)} {`,
+          `${inner}label=${quoteRaw(wrapLabel(view.title))}`,
+          `${inner}fontname="Helvetica-Bold"`,
+          `${inner}style="dashed,rounded"`,
+          `${inner}URL=${quoteRaw(`#${viewId}`)}`,
+          `${inner}tooltip=${quoteRaw(`Open ${view.title}`)}`
+        )
+      }
+      if (anchors.has(viewId)) lines.push(`${inner}${quoteRaw(`anchor::${viewId}`)} [shape=point style=invis width=0.01 height=0.01 label=""]`)
+      const nodes = graphNodes(view.graph)
+      const clusters = graphClusters(view.graph)
+      const homeCluster = new Map(
+        nodes.map(node => [
+          node._gvid,
+          clusters.filter(cluster => cluster.nodes.includes(node._gvid)).sort((a, b) => a.nodes.length - b.nodes.length)[0] ?? null,
+        ])
+      )
+      const children = [...parentOf].filter(([, parent]) => parent === viewId).map(([child]) => child)
+      const childCluster = new Map(
+        children.map(child => {
+          const box = nodes.find(node => node.class !== 'ghost' && viewLink(node) === child)
+          return [child, box == null ? null : homeCluster.get(box._gvid)]
+        })
+      )
+      for (const cluster of clusters) {
+        const members = nodes.filter(node => homeCluster.get(node._gvid) === cluster)
+        if (members.length === 0) continue
+        lines.push(`${inner}subgraph ${quoteRaw(`cluster_v_${viewId}__${cluster.name}`)} {`)
+        if (cluster.label != null) lines.push(`${inner}  label=${quoteRaw(wrapLabel(cluster.label))}`, `${inner}  fontname="Helvetica-Bold"`)
+        lines.push(`${inner}  style="dashed"`)
+        for (const member of members) emitNode(viewId, member, `${inner}  `)
+        for (const child of children) if (childCluster.get(child) === cluster) emitView(child, `${inner}  `)
+        lines.push(`${inner}}`)
+      }
+      for (const node of nodes) if (homeCluster.get(node._gvid) == null) emitNode(viewId, node, inner)
+      for (const child of children) if (childCluster.get(child) == null) emitView(child, inner)
+      if (!isRoot) lines.push(`${indent}}`)
+    }
+    emitView(rootId, '  ')
+    lines.push(...edges, '}')
+    return { dot: lines.join('\n'), views: expanded.size }
+  }
+
+  function ensureMapSection() {
+    if (mapSection != null) return mapSection
+    mapSection = document.createElement('section')
+    mapSection.className = 'view map-view'
+    mapSection.dataset.view = MAP_ID
+    mapSection.hidden = true
+    mapSection.innerHTML = `<div class="map-controls">
+<div class="seg map-depth" role="group" aria-label="How many levels to open"></div>
+<div class="seg" role="group" aria-label="Zoom">
+<button type="button" data-zoom="out" aria-label="Zoom out">−</button>
+<button type="button" data-zoom="fit">Fit</button>
+<button type="button" data-zoom="actual" class="map-zoom-level" aria-label="Zoom to 100%">100%</button>
+<button type="button" data-zoom="in" aria-label="Zoom in">+</button>
+</div>
+<span class="map-hint">Drag to pan. Pinch, or hold ⌘/Ctrl and scroll, to zoom.</span>
+</div>
+<figure class="figure"><div class="stage map-stage"></div><div class="detail" hidden></div><figcaption></figcaption></figure>`
+    viewsEl.append(mapSection)
+    const stage = mapSection.querySelector('.map-stage')
+    mapSection.querySelector('.map-controls').addEventListener('click', event => {
+      const button = event.target.closest('button[data-zoom]')
+      if (button == null) return
+      const action = button.dataset.zoom
+      if (action === 'fit') fitMap()
+      else setMapZoom(action === 'actual' ? 1 : action === 'in' ? mapZoom * 1.25 : mapZoom / 1.25)
+    })
+    stage.addEventListener(
+      'wheel',
+      event => {
+        if (!event.ctrlKey && !event.metaKey) return
+        event.preventDefault()
+        setMapZoom(mapZoom * Math.exp(-event.deltaY * 0.0015), { x: event.clientX, y: event.clientY })
+      },
+      { passive: false }
+    )
+    stage.addEventListener('pointerdown', event => {
+      if (event.pointerType !== 'mouse' || event.button !== 0) return
+      mapDrag = { x: event.clientX, y: event.clientY, left: stage.scrollLeft, top: stage.scrollTop, moved: false }
+    })
+    window.addEventListener('pointermove', event => {
+      if (mapDrag == null) return
+      const dx = event.clientX - mapDrag.x
+      const dy = event.clientY - mapDrag.y
+      if (!mapDrag.moved && Math.abs(dx) + Math.abs(dy) < 5) return
+      mapDrag.moved = true
+      stage.classList.add('panning')
+      stage.scrollLeft = mapDrag.left - dx
+      stage.scrollTop = mapDrag.top - dy
+    })
+    window.addEventListener('pointerup', () => {
+      if (mapDrag?.moved) mapSuppressClick = true
+      mapDrag = null
+      stage.classList.remove('panning')
+    })
+    stage.addEventListener(
+      'click',
+      event => {
+        if (!mapSuppressClick) return
+        mapSuppressClick = false
+        event.preventDefault()
+        event.stopPropagation()
+      },
+      true
+    )
+    return mapSection
+  }
+  function setMapZoom(zoom, focus) {
+    const stage = mapSection.querySelector('.map-stage')
+    const svg = stage.querySelector('svg')
+    if (svg == null) return
+    const next = Math.min(4, Math.max(0.1, zoom))
+    const rect = stage.getBoundingClientRect()
+    const focusX = focus == null ? stage.clientWidth / 2 : focus.x - rect.left
+    const focusY = focus == null ? stage.clientHeight / 2 : focus.y - rect.top
+    const contentX = (stage.scrollLeft + focusX) / mapZoom
+    const contentY = (stage.scrollTop + focusY) / mapZoom
+    mapZoom = next
+    svg.style.width = `${Math.round(mapNatural.width * mapZoom)}px`
+    svg.style.height = `${Math.round(mapNatural.height * mapZoom)}px`
+    stage.style.height = `${Math.round(Math.min(mapMaxHeight(), Math.max(320, mapNatural.height * mapZoom + 34)))}px`
+    stage.scrollLeft = contentX * mapZoom - focusX
+    stage.scrollTop = contentY * mapZoom - focusY
+    mapSection.querySelector('.map-zoom-level').textContent = `${Math.round(mapZoom * 100)}%`
+  }
+  function mapMaxHeight() {
+    return Math.min(window.innerHeight * 0.74, 920)
+  }
+  function fitMap() {
+    const stage = mapSection.querySelector('.map-stage')
+    const fit = Math.min(1.25, (stage.clientWidth - 32) / mapNatural.width, (mapMaxHeight() - 34) / mapNatural.height)
+    setMapZoom(fit)
+    stage.scrollLeft = 0
+    stage.scrollTop = 0
+  }
+  function renderDepthButtons() {
+    const maxDepth = treeDepth(mapRoot)
+    const group = mapSection.querySelector('.map-depth')
+    const buttons = Array.from({ length: maxDepth + 1 }, (_, depth) => {
+      const button = document.createElement('button')
+      button.type = 'button'
+      button.textContent = depth === 0 ? 'Top level' : depth === maxDepth ? 'All levels' : depth === 1 ? '1 level' : `${depth} levels`
+      button.setAttribute('aria-pressed', String(mapOverrides.size === 0 && depth === mapDepth))
+      button.addEventListener('click', () => setMapDepth(depth))
+      return button
+    })
+    if (mapOverrides.size > 0) {
+      const reset = document.createElement('button')
+      reset.type = 'button'
+      reset.textContent = 'Reset'
+      reset.title = 'Undo the groups you opened or closed one by one'
+      reset.addEventListener('click', () => setMapDepth(mapDepth))
+      buttons.push(reset)
+    }
+    group.replaceChildren(...buttons)
+    group.hidden = maxDepth < 1
+  }
+  function toggleMapBranch(badge) {
+    const opening = badge.dataset.mapOpen != null
+    mapOverrides.set(opening ? badge.dataset.mapOpen : badge.dataset.mapClose, opening)
+    renderDepthButtons()
+    renderMap()
+    renderMapChrome()
+  }
+  function addMapToggles() {
+    const titled = (element, text) => {
+      const title = document.createElementNS(SVG_NS, 'title')
+      title.textContent = text
+      element.prepend(title)
+    }
+    for (const node of mapSection.querySelectorAll('.stage g.node.drill')) {
+      const target = views.get(node.dataset.target)
+      const badge = node.querySelector('.badge')
+      if (target == null || badge == null || !mapChildren(node.dataset.home).includes(target.id) || lastMapExpansion.has(target.id)) continue
+      badge.classList.add('map-toggle')
+      badge.dataset.mapOpen = target.id
+      badge.querySelector('path').setAttribute('d', 'M-3.5 0 H3.5 M0 -3.5 V3.5')
+      titled(badge, `Open ${target.title} here`)
+    }
+    for (const cluster of mapSection.querySelectorAll('.stage g.cluster')) {
+      const name = cluster.dataset.name ?? ''
+      const view = views.get(name.slice('cluster_v_'.length))
+      const shape = cluster.querySelector('path, polygon')
+      if (!name.startsWith('cluster_v_') || name.includes('__') || view == null || shape == null) continue
+      const box = shape.getBBox()
+      const badge = document.createElementNS(SVG_NS, 'g')
+      badge.setAttribute('class', 'badge map-toggle')
+      badge.setAttribute('transform', `translate(${box.x + box.width - 12} ${box.y + 12})`)
+      badge.dataset.mapClose = view.id
+      const circle = document.createElementNS(SVG_NS, 'circle')
+      circle.setAttribute('r', '7.5')
+      const mark = document.createElementNS(SVG_NS, 'path')
+      mark.setAttribute('d', 'M-3.5 0 H3.5')
+      badge.append(circle, mark)
+      titled(badge, `Close ${view.title} back into a box`)
+      ;(cluster.querySelector('a') ?? cluster).append(badge)
+    }
+  }
+  function setMapDepth(depth) {
+    mapOverrides.clear()
+    mapDepth = depth
+    try {
+      localStorage.setItem(MAP_DEPTH_KEY, String(depth))
+    } catch {}
+    renderDepthButtons()
+    renderMap()
+    renderMapChrome()
+  }
+  function storedMapDepth() {
+    try {
+      const stored = Number.parseInt(localStorage.getItem(MAP_DEPTH_KEY) ?? '', 10)
+      return Number.isFinite(stored) && stored >= 0 ? stored : null
+    } catch {
+      return null
+    }
+  }
+  function renderMap() {
+    const key = `${revision}|${mapRoot}|${mapDepth}|${[...mapOverrides].join(';')}`
+    if (key === mapKey) return
+    mapKey = key
+    const stage = mapSection.querySelector('.map-stage')
+    const { dot, views: shown } = buildMapDot(mapRoot, mapDepth)
+    let svg = null
+    try {
+      svg = viz.renderSVGElement(dot, LAYOUT)
+    } catch (failure) {
+      const message = document.createElement('p')
+      message.className = 'load-error'
+      message.textContent = `The whole map could not be drawn: ${failure?.message ?? failure}`
+      stage.replaceChildren(message)
+      return
+    }
+    const box = svg.viewBox.baseVal
+    mapNatural = { width: box.width * (4 / 3), height: box.height * (4 / 3) }
+    svg.removeAttribute('width')
+    svg.removeAttribute('height')
+    svg.setAttribute('role', 'img')
+    svg.setAttribute('aria-label', `Whole map of ${views.get(mapRoot).title}`)
+    for (const element of svg.querySelectorAll('[id]')) element.id = `${MAP_ID}--${element.id}`
+    for (const group of svg.querySelectorAll('g.node, g.cluster')) {
+      const title = group.querySelector(':scope > title')?.textContent ?? ''
+      const separator = title.indexOf('::')
+      group.dataset.home = separator > 0 ? title.slice(0, separator) : ''
+      group.dataset.name = separator > 0 ? title.slice(separator + 2) : title
+      const anchor = group.querySelector('a')
+      const href = anchor?.getAttributeNS(XLINK, 'href') ?? anchor?.getAttribute('href') ?? ''
+      if (!href.startsWith('#')) continue
+      group.dataset.target = href.slice(1)
+      if (separator > 0 && href.slice(1) !== group.dataset.home) group.classList.add('drill')
+    }
+    stage.replaceChildren(svg)
+    addBadges(mapSection)
+    addMapToggles()
+    const maxDepth = treeDepth(mapRoot)
+    mapSection.querySelector('figcaption').textContent = `${shown} views under ${views.get(mapRoot).title}, ${
+      mapOverrides.size > 0 ? 'with groups you opened or closed' : mapDepth >= maxDepth ? 'every level' : mapDepth === 0 ? 'top level only' : mapDepth === 1 ? 'one level deep' : `${mapDepth} levels deep`
+    }, drawn as one diagram. Each dashed group is a view; click a box or a group's name to open its own diagram.`
+    fitMap()
+  }
+  function renderMapChrome() {
+    const root = views.get(mapRoot)
+    const rootItem = document.createElement('li')
+    const rootButton = document.createElement('button')
+    rootButton.type = 'button'
+    rootButton.textContent = root.title
+    rootButton.addEventListener('click', () => go(mapRoot))
+    rootItem.append(rootButton)
+    const mapItem = document.createElement('li')
+    const mapLabel = document.createElement('span')
+    mapLabel.setAttribute('aria-current', 'page')
+    mapLabel.textContent = 'Whole map'
+    mapItem.append(mapLabel)
+    crumbsEl.replaceChildren(rootItem, mapItem)
+    rootsEl.replaceChildren(
+      ...roots().map(view => {
+        const button = document.createElement('button')
+        button.type = 'button'
+        button.textContent = view.title
+        button.setAttribute('aria-pressed', String(view.id === mapRoot))
+        button.addEventListener('click', () => go(view.id))
+        return button
+      })
+    )
+    rootsEl.hidden = roots().length < 2
+    titleEl.textContent = `${root.title}: whole map`
+    renderLegend(mapSection)
+    hintEl.textContent = ''
+  }
+  function showMap() {
+    if (currentId === MAP_ID) return
+    if (editing) {
+      setStatus('Finish editing to open the whole map.', 'bad')
+      try {
+        if (currentId != null) writeRoute(currentId)
+      } catch {}
+      return
+    }
+    const fromId = currentId
+    mapRoot = (fromId != null ? ancestry(fromId)[0] : null) ?? (views.has(mapRoot) ? mapRoot : roots()[0]?.id)
+    if (mapRoot == null) return
+    const maxDepth = Math.max(1, treeDepth(mapRoot))
+    mapDepth = Math.min(Math.max(0, mapDepth ?? storedMapDepth() ?? maxDepth), maxDepth)
+    ensureMapSection()
+    if (fromId != null) views.get(fromId)?.section?.setAttribute('hidden', '')
+    mapSection.hidden = false
+    currentId = MAP_ID
+    renderDepthButtons()
+    renderMap()
+    renderChrome(MAP_ID)
+    if (!reducedMotion.matches && fromId != null) {
+      mapSection.querySelector('.figure').animate([{ transform: 'scale(0.94)', opacity: 0 }, { transform: 'none', opacity: 1 }], {
+        duration: 260,
+        easing: 'cubic-bezier(.2,.75,.25,1)',
+      })
+    }
+    titleEl.focus({ preventScroll: true })
+  }
+  mapToggle.addEventListener('click', () => {
+    if (currentId === MAP_ID) go(mapRoot)
+    else go(MAP_ID)
+  })
+
+  // ---------- editing ----------
+  function labelOf(view, name) {
+    const object = view.objects.get(name)
+    const raw = object?.label
+    if (raw == null || raw === '\\N' || raw === '') return name.startsWith('cluster') ? '' : name
+    return decodeDot(raw)
+  }
+  function descriptionOf(view, name) {
+    return decodeDot(view.objects.get(name)?.description ?? '')
+  }
+  function firstLine(text) {
+    return text.split('\n')[0].trim()
+  }
+  function renameView(viewId, oldTitle, newTitle) {
+    editView(viewId, text => setGraphAttr(text, 'title', newTitle))
+    let renamedBoxes = 0
+    for (const view of views.values()) {
+      for (const [name, object] of view.objects) {
+        if (object.URL !== `#${viewId}`) continue
+        const label = labelOf(view, name)
+        if (firstLine(label) !== oldTitle) continue
+        const lines = label.split('\n')
+        lines[0] = newTitle
+        const isCluster = name.startsWith('cluster')
+        editView(view.id, text => (isCluster ? setClusterAttr : setNodeAttr)(text, name, 'label', lines.join('\n')))
+        renamedBoxes += 1
+      }
+    }
+    return renamedBoxes
+  }
+  function describeRenamed(count) {
+    return count === 0 ? '' : ` Also renamed ${count === 1 ? '1 box' : `${count} boxes`} that open this view.`
+  }
+  function editCount() {
+    return source === savedSource ? 0 : 1
+  }
+  function setStatus(message, tone) {
+    editStatus.textContent = message
+    editStatus.className = `edit-status${tone ? ` ${tone}` : ''}`
+  }
+  function storeDraft() {
+    try {
+      if (editCount() > 0) localStorage.setItem(DRAFT_KEY, JSON.stringify({ base: savedSource, source }))
+      else localStorage.removeItem(DRAFT_KEY)
+    } catch {}
+  }
+  function takeDraft() {
+    try {
+      const draft = JSON.parse(localStorage.getItem(DRAFT_KEY) ?? 'null')
+      if (draft?.base === savedSource && typeof draft.source === 'string' && draft.source !== savedSource) return draft.source
+      localStorage.removeItem(DRAFT_KEY)
+    } catch {}
+    return null
+  }
+  function updateDirty() {
+    const dirty = editCount() > 0 || dotDraftInvalid
+    saveButton.disabled = !dirty || dotDraftInvalid
+    discardButton.disabled = !dirty
+    undoButton.disabled = !(doc?.canUndo ?? false)
+    redoButton.disabled = !(doc?.canRedo ?? false)
+    editToolsEl.hidden = !editing
+    editbar.hidden = !(editing || dirty || keepBarOpen)
+    editToggle.textContent = editing ? (dirty && MODE === 'artifact' ? 'Save and finish' : 'Done editing') : 'Edit'
+    if (dotDraftInvalid) setStatus('The DOT has an error; fix it to apply and save.', 'bad')
+    else if (editing && modelProblems.length > 0) setStatus('Unsaved changes. Fix the problems listed in the DOT editor before saving.', 'bad')
+    else if (editing) setStatus(dirty ? 'Unsaved changes.' : 'No unsaved changes.', '')
+    else if (dirty) setStatus('Unsaved changes. Download the updated file to keep them.', 'bad')
+    storeDraft()
+  }
+  function setEditing(on) {
+    editing = on
+    root.classList.toggle('is-editing', on)
+    editToggle.setAttribute('aria-pressed', String(on))
+    setEditable(titleEl, on)
+    if (!on) {
+      closeEditor()
+      setDotOpen(false)
+    }
+    for (const view of views.values()) applyEditAffordances(view)
+    const view = views.get(currentId)
+    if (on && view != null) mountCanvas(view)
+    if (!on) {
+      unmountCanvas()
+      if (view != null) renderView(view)
+    }
+    if (view?.section != null) {
+      showText(view.section.querySelector('figcaption'), view.caption)
+      showText(view.section.querySelector('.notes'), view.notes)
+    }
+    renderChrome(currentId)
+    updateDirty()
+  }
+  function flashSaved(message) {
+    keepBarOpen = true
+    updateDirty()
+    setStatus(message, 'ok')
+    clearTimeout(flashSaved.timer)
+    flashSaved.timer = setTimeout(() => {
+      keepBarOpen = false
+      updateDirty()
+    }, 4000)
+  }
+  function otherViewsShowing(name, label) {
+    return [...views.values()].filter(
+      view => view.id !== currentId && view.objects.has(name) && !name.startsWith('cluster') && labelOf(view, name) === label
+    )
+  }
+  function openEditor(group) {
+    if (blockedByDotDraft()) return
+    const view = views.get(currentId)
+    const name = group.dataset.name
+    const isCluster = group.classList.contains('cluster')
+    const label = labelOf(view, name)
+    const others = otherViewsShowing(name, label)
+    editorTarget = { name, isCluster, label, description: descriptionOf(view, name), others: others.map(other => other.id) }
+    for (const selected of viewsEl.querySelectorAll('.is-selected')) selected.classList.remove('is-selected')
+    group.classList.add('is-selected')
+    $('editor-heading').textContent = isCluster ? 'Edit group' : 'Edit node'
+    $('editor-id').textContent = name
+    $('editor-label').value = label
+    $('editor-description').value = editorTarget.description
+    $('editor-spread-row').hidden = others.length === 0
+    $('editor-spread').checked = true
+    $('editor-spread-text').textContent = `Also update it in ${others.length === 1 ? '1 other view' : `${others.length} other views`}: ${others.map(other => other.title).join(', ')}`
+    const target = group.dataset.target
+    const targetView = target == null ? null : views.get(target)
+    const linked = targetView != null && firstLine(label) === targetView.title
+    editorTarget.linkedView = linked ? target : null
+    $('editor-view-row').hidden = !linked
+    $('editor-view').checked = true
+    $('editor-view-text').textContent = linked ? `Also rename the view it opens (“${targetView.title}”), its breadcrumb, and other boxes that open it` : ''
+    $('editor-open').hidden = targetView == null
+    editor.hidden = false
+    const rect = group.getBoundingClientRect()
+    const width = editor.offsetWidth
+    const height = editor.offsetHeight
+    const reservedBottom = editbar.hidden ? 0 : editbar.offsetHeight
+    const roomBelow = window.innerHeight - reservedBottom - rect.bottom
+    const placeAbove = roomBelow < height + 20 && rect.top > height + 20
+    const left = Math.min(Math.max(16, rect.left + window.scrollX), window.scrollX + document.documentElement.clientWidth - width - 16)
+    editor.style.left = `${left}px`
+    editor.style.top = `${placeAbove ? rect.top + window.scrollY - height - 10 : rect.bottom + window.scrollY + 10}px`
+    $('editor-label').focus({ preventScroll: true })
+    $('editor-label').select()
+    if (!placeAbove && roomBelow < height + 20) window.scrollBy({ top: height + 20 - roomBelow, behavior: reducedMotion.matches ? 'auto' : 'smooth' })
+  }
+  function closeEditor(restoreFocus) {
+    if (editor.hidden) return
+    editor.hidden = true
+    const name = editorTarget?.name
+    editorTarget = null
+    const selected = viewsEl.querySelector('.is-selected')
+    selected?.classList.remove('is-selected')
+    if (restoreFocus && name != null) focusGroup(name)
+  }
+  function focusGroup(name) {
+    const section = views.get(currentId)?.section
+    const group = [...(section?.querySelectorAll('.stage g.node, .stage g.cluster') ?? [])].find(candidate => candidate.dataset.name === name)
+    ;(group?.querySelector('a') ?? group)?.focus?.({ preventScroll: true })
+  }
+  function applyEditor() {
+    if (editorTarget == null) return
+    const label = $('editor-label').value.trim()
+    const description = $('editor-description').value.trim()
+    const { name, isCluster } = editorTarget
+    const targets = [currentId, ...(!$('editor-spread-row').hidden && $('editor-spread').checked ? editorTarget.others : [])]
+    for (const id of targets) {
+      editView(id, text => {
+        let next = text
+        if (label !== editorTarget.label && label !== '') {
+          next = isCluster ? setClusterAttr(next, name, 'label', label) : setNodeAttr(next, name, 'label', label)
+        }
+        if (description !== editorTarget.description) {
+          next = isCluster ? setClusterAttr(next, name, 'description', description) : setNodeAttr(next, name, 'description', description)
+        }
+        return next
+      })
+    }
+    let renamedBoxes = 0
+    const renameLinkedView =
+      editorTarget.linkedView != null && $('editor-view').checked && label !== '' && firstLine(label) !== firstLine(editorTarget.label)
+    if (renameLinkedView) {
+      parseModel()
+      renamedBoxes = renameView(editorTarget.linkedView, firstLine(editorTarget.label), firstLine(label))
+    }
+    closeEditor()
+    commitEdits()
+    if (renameLinkedView) setStatus(`Unsaved changes. Renamed the view it opens.${describeRenamed(renamedBoxes)}`, '')
+    focusGroup(name)
+  }
+  function commitText(element, key) {
+    const value = element.innerText.replace(/ /g, ' ').trim()
+    const view = views.get(currentId)
+    const current = key === 'title' ? view.title : key === 'caption' ? view.caption : view.notes
+    if (value === current) return
+    if (blockedByDotDraft()) {
+      element.textContent = current
+      return
+    }
+    if (key === 'title' && value === '') {
+      element.textContent = current
+      return
+    }
+    if (key === 'title') {
+      const renamedBoxes = renameView(currentId, current, value)
+      commitEdits()
+      if (renamedBoxes > 0) setStatus(`Unsaved changes.${describeRenamed(renamedBoxes)}`, '')
+      return
+    }
+    editView(currentId, text => setGraphAttr(text, key, value))
+    commitEdits()
+  }
+  function fillTemplate(dot) {
+    const embeddedViz = document.getElementById('viz-lib')?.textContent ?? ''
+    return PAGE_TEMPLATE.replace(SLOT_SOURCE, () => dot.replaceAll('</', '<\\/'))
+      .replace(SLOT_VIZ, () => `<script id="viz-lib">${embeddedViz}<\/script>`)
+      .replace(SLOT_TEMPLATE, () => JSON.stringify(PAGE_TEMPLATE).replace(/</g, '\\u003c'))
+  }
+  async function save() {
+    if (blockedByDotDraft()) return false
+    if (modelProblems.length > 0) {
+      setStatus('Fix the problems listed in the DOT editor before saving.', 'bad')
+      if (editing && !dotOpen) setDotOpen(true)
+      return false
+    }
+    if (MODE === 'standalone') {
+      const html = PAGE_SHELL.before + fillTemplate(source) + PAGE_SHELL.after
+      const link = document.createElement('a')
+      link.href = URL.createObjectURL(new Blob([html], { type: 'text/html' }))
+      link.download = `${(document.title || 'diagrams').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}.html`
+      document.body.append(link)
+      link.click()
+      link.remove()
+      setTimeout(() => URL.revokeObjectURL(link.href), 10000)
+      savedSource = source
+      flashSaved('Downloaded the updated file. Replace the old copy with it.')
+      return true
+    }
+    const artifact = await window.claude?.use?.('artifact')
+    if (artifact == null) {
+      setStatus('Saving is not available in this view. Use Copy DOT to keep your changes.', 'bad')
+      return false
+    }
+    saveButton.disabled = true
+    editToggle.disabled = true
+    setStatus('Saving…', '')
+    try {
+      // Save to this widget's own file, so a page may hold several diagrams
+      // (system.dot, lifecycle.dot) and each saves independently.
+      //
+      // An inline model has no file to write: MODEL_PATH then names a <script>
+      // in the page, and publishing to it would create a junk file instead of
+      // saving. Such a widget is read-only by construction.
+      if (!/\.dot$/i.test(MODEL_PATH)) {
+        setStatus('This diagram is written into the page, so it cannot be saved here. Use Copy DOT.', 'bad')
+        return false
+      }
+      await artifact.publish({ [MODEL_PATH]: { content: source, contentType: 'text/plain' } })
+      savedSource = source
+      flashSaved('Saved as a new version.')
+      return true
+    } catch (failure) {
+      const code = failure?.code
+      if (code === 'conflict') setStatus('Someone saved a newer version first. The page is reloading with theirs; your changes were not saved.', 'bad')
+      else if (code === 'not_writer' || code === 'not_granted') setStatus('You can view this page but not save it. Use Copy DOT to keep your changes.', 'bad')
+      else if (code === 'capability_disabled') setStatus('Saving is turned off for this view (for example a public link). Use Copy DOT to keep your changes.', 'bad')
+      else setStatus(`Could not save: ${failure?.message ?? code ?? failure}`, 'bad')
+      saveButton.disabled = editCount() === 0
+      return false
+    } finally {
+      editToggle.disabled = false
+    }
+  }
+  function copyText(text, button) {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        const original = button.textContent
+        button.textContent = 'Copied'
+        setTimeout(() => {
+          button.textContent = original
+        }, 1500)
+      })
+      .catch(() => setStatus('Copy failed. Open "DOT source for this view" and select the text instead.', 'bad'))
+  }
+
+  // ---------- events ----------
+  viewsEl.addEventListener('click', event => {
+    const branchToggle = event.target.closest?.('.map-toggle')
+    if (branchToggle != null) {
+      event.preventDefault()
+      event.stopPropagation()
+      toggleMapBranch(branchToggle)
+      return
+    }
+    const copy = event.target.closest('.source .copy')
+    if (copy != null) {
+      copyText(views.get(currentId)?.text ?? '', copy)
+      return
+    }
+    const textLink = event.target.closest('figcaption a, .notes a')
+    if (textLink != null && !editing) {
+      const href = textLink.getAttribute('href') ?? ''
+      if (href.startsWith('#')) {
+        event.preventDefault()
+        if (views.has(href.slice(1)) || href.slice(1) === MAP_ID) go(href.slice(1))
+      }
+      return
+    }
+    if (editing) return
+    const anchor = event.target.closest('.stage a')
+    if (anchor == null) return
+    const href = anchor.getAttributeNS(XLINK, 'href') ?? anchor.getAttribute('href') ?? ''
+    if (!href.startsWith('#')) return
+    event.preventDefault()
+    go(href.slice(1), anchor)
+  })
+  viewsEl.addEventListener('keydown', event => {
+    if (!editing || (event.key !== 'Enter' && event.key !== ' ') || event.target.closest?.('.edit-canvas')) return
+    const group = event.target.closest?.('.stage g.node, .stage g.cluster')
+    if (group == null) return
+    event.preventDefault()
+    openEditor(group)
+  })
+  viewsEl.addEventListener('pointerover', event => {
+    const group = event.target.closest?.('.stage g.node, .stage g.cluster')
+    const onMap = currentId === MAP_ID
+    const section = onMap ? mapSection : views.get(currentId)?.section
+    const view = views.get(onMap ? group?.dataset.home : currentId)
+    if (group == null || section == null || view == null) return
+    const description = descriptionOf(view, group.dataset.name)
+    const detail = section.querySelector('.detail')
+    if (description === '') {
+      detail.hidden = true
+      return
+    }
+    const strong = document.createElement('strong')
+    strong.textContent = labelOf(view, group.dataset.name).replace(/\n/g, ' ')
+    detail.replaceChildren(strong, document.createTextNode(` — ${description}`))
+    detail.hidden = false
+  })
+  viewsEl.addEventListener('focusout', event => {
+    const element = event.target
+    if (!editing || !element.isContentEditable) return
+    if (element.tagName === 'FIGCAPTION') commitText(element, 'caption')
+    else if (element.classList.contains('notes')) commitText(element, 'notes')
+  })
+  titleEl.addEventListener('focusout', () => {
+    if (editing) commitText(titleEl, 'title')
+  })
+  document.addEventListener('keydown', event => {
+    const element = event.target
+    if (editing && event.key.toLowerCase() === 's' && (event.metaKey || event.ctrlKey)) {
+      event.preventDefault()
+      if (element === dotText) {
+        clearTimeout(dotTimer)
+        applyDotText()
+      }
+      if (!saveButton.disabled) save()
+      return
+    }
+    if (editing && event.key.toLowerCase() === 'z' && (event.metaKey || event.ctrlKey) && !element.closest?.('textarea, input') && element.isContentEditable !== true) {
+      event.preventDefault()
+      syncDocument()
+      if (event.shiftKey) doc?.redo()
+      else doc?.undo()
+      return
+    }
+    if (element === dotText && event.key === 'Escape') {
+      event.preventDefault()
+      dotText.blur()
+      return
+    }
+    if (element.isContentEditable === true) {
+      if (event.key === 'Escape') {
+        const view = views.get(currentId)
+        element.textContent = element === titleEl ? view.title : element.tagName === 'FIGCAPTION' ? view.caption : view.notes
+        element.blur()
+        event.preventDefault()
+      } else if (event.key === 'Enter' && (element === titleEl || event.metaKey || event.ctrlKey)) {
+        event.preventDefault()
+        element.blur()
+      }
+      return
+    }
+    if (event.key !== 'Escape' || event.defaultPrevented) return
+    if (!editor.hidden) {
+      closeEditor(true)
+      return
+    }
+    if (element.closest?.('textarea, input')) return
+    if (editing && element.closest?.('.edit-canvas')) return
+    if (currentId === MAP_ID) {
+      go(mapRoot)
+      return
+    }
+    const parent = views.get(currentId)?.parent
+    if (parent != null && parent !== '' && views.has(parent)) go(parent)
+  })
+  editor.addEventListener('keydown', event => {
+    if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+      event.preventDefault()
+      applyEditor()
+    }
+  })
+  document.addEventListener('pointerdown', event => {
+    if (editor.hidden || editor.contains(event.target) || event.target.closest?.('.stage g.node, .stage g.cluster')) return
+    closeEditor()
+  })
+  $('editor-apply').addEventListener('click', applyEditor)
+  $('editor-cancel').addEventListener('click', () => closeEditor(true))
+  $('editor-open').addEventListener('click', () => {
+    const target = viewsEl.querySelector('.is-selected')?.dataset.target
+    closeEditor()
+    if (target != null) go(target)
+  })
+  editToggle.addEventListener('click', async () => {
+    if (!editing) {
+      setEditing(true)
+      return
+    }
+    if (editCount() > 0 && MODE === 'artifact' && !(await save())) return
+    setEditing(false)
+  })
+  saveButton.addEventListener('click', save)
+  $('add-node').addEventListener('click', addNode)
+  createGroupButton.addEventListener('click', () => canvas?.setTool(canvas.tool === 'box' ? 'select' : 'box'))
+  toViewButton.addEventListener('click', turnIntoView)
+  undoButton.addEventListener('click', () => {
+    syncDocument()
+    doc?.undo()
+  })
+  redoButton.addEventListener('click', () => {
+    syncDocument()
+    doc?.redo()
+  })
+  detailsButton.addEventListener('click', () => openDetails(selected))
+  discardButton.addEventListener('click', () => {
+    clearTimeout(dotTimer)
+    dotDraftInvalid = false
+    source = savedSource
+    commitEdits()
+    if (dotOpen) loadDot()
+    setStatus('Changes discarded.', '')
+  })
+  $('copy-model').addEventListener('click', event => copyText(source, event.currentTarget))
+  dotToggle.addEventListener('click', () => setDotOpen(!dotOpen))
+  $('dot-scope-view').addEventListener('click', () => setDotScope('view'))
+  $('dot-scope-model').addEventListener('click', () => setDotScope('model'))
+  $('dot-close').addEventListener('click', () => {
+    setDotOpen(false)
+    dotToggle.focus()
+  })
+  dotText.addEventListener('scroll', syncDotScroll)
+  dotText.addEventListener('input', () => {
+    paintDot()
+    clearTimeout(dotTimer)
+    dotTimer = setTimeout(applyDotText, 250)
+  })
+  dotText.addEventListener('keydown', event => {
+    if (event.key !== 'Tab' || event.shiftKey || event.metaKey || event.ctrlKey || event.altKey) return
+    event.preventDefault()
+    dotText.setRangeText('  ', dotText.selectionStart, dotText.selectionEnd, 'end')
+    dotText.dispatchEvent(new Event('input'))
+  })
+  new ResizeObserver(() => document.documentElement.style.setProperty('--editbar-height', `${editbar.offsetHeight}px`)).observe(editbar)
+  window.addEventListener('beforeunload', event => {
+    if (editCount() > 0) event.preventDefault()
+  })
+  // Only a hash-routed instance listens: an embedded widget must ignore the
+  // host page's URL, which belongs to the document around it.
+  if (ROUTING === 'hash') {
+    window.addEventListener('hashchange', () => {
+      show(readRoute())
+      keepFocus()
+    })
+  }
+  window.addEventListener('focus', updateFocusNote)
+  window.addEventListener('blur', updateFocusNote)
+
+  // ---------- start ----------
+  async function loadSource() {
+    // Inline first: a <script type="text/vnd.graphviz"> either named by
+    // data-dd-model or the page-level #model-source. Otherwise fetch the file.
+    const inline = document.getElementById(MODEL_PATH) ?? document.getElementById('model-source')
+    const embedded = inline?.textContent ?? ''
+    if (embedded.trim() !== '') return embedded.replaceAll('<\\/', '</')
+    const response = await fetch(MODEL_PATH, { cache: 'no-store' })
+    if (!response.ok) throw new Error(`${MODEL_PATH} could not be loaded (HTTP ${response.status})`)
+    return response.text()
+  }
+  async function offerEditing() {
+    if (MODE === 'artifact') {
+      const user = await window.claude?.use?.('user')
+      const canEdit = user == null ? null : await user.canEdit().catch(() => null)
+      if (canEdit === false) return
+    }
+    canEditPage = true
+    updateTopButtons(currentId)
+  }
+  async function start() {
+    try {
+      if (typeof Viz?.instance !== 'function') throw new Error('the Graphviz library did not load')
+      ;[viz, source] = await Promise.all([Viz.instance(), loadSource()])
+    } catch (failure) {
+      $('loading').className = 'load-error'
+      $('loading').textContent = `Could not draw the diagrams: ${failure?.message ?? failure}`
+      return
+    }
+    savedSource = source
+    if (MODE === 'standalone') saveButton.textContent = 'Download updated file'
+    const draft = takeDraft()
+    if (draft != null) source = draft
+    $('loading').remove()
+    parseModel()
+    try {
+      doc = makeDocument(source)
+    } catch {
+      doc = null
+    }
+    if (views.size === 0) {
+      viewsEl.textContent = 'The model has no digraph views.'
+      return
+    }
+    show(readRoute())
+    keepFocus()
+    await offerEditing()
+    if (draft != null) {
+      if (currentId === MAP_ID) go(mapRoot)
+      setEditing(true)
+      setStatus('Restored your unsaved changes from last time. Save to keep them, or discard them.', '')
+    }
+  }
+  start()
+})()
+</script>
